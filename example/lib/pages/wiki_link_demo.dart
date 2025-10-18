@@ -215,8 +215,8 @@ class _WikiLinkState extends State<_WikiLink> {
       showDelay: const Duration(milliseconds: 400),
       backgroundColor: const Color(0xFF1E293B),
       arrowAlignment: 0.1,
-      arrowWidth: 20,
-      borderRadius: 8,
+      arrowSize: const Size(20, 10),
+      borderRadius: BorderRadius.circular(8),
       overlayChildBuilder: (context) => _WikiPreviewCardContent(
         title: widget.previewTitle,
         content: widget.previewContent,

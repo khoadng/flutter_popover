@@ -136,22 +136,21 @@ Use the `Popover.arrow` constructor for easy and extensive styling. You can cust
 ```dart
 Popover.arrow(
   child: const Text('Styled Popover'),
-  
+
   // Popover body styling
   backgroundColor: const Color(0xFF1E293B),
-  borderRadius: 12,
+  borderRadius: BorderRadius.circular(12),
   boxShadow: [
     BoxShadow(
       color: Colors.black.withOpacity(0.3),
       blurRadius: 10,
     ),
   ],
-  border: const BorderSide(color: Colors.blueAccent),
+  border: const BorderSide(color: Colors.blueAccent, width: 1.0),
 
   // Arrow styling
   arrowShape: const RoundedArrow(spread: 0.5, liftOff: 0.2),
-  arrowHeight: 12,
-  arrowWidth: 24,
+  arrowSize: const Size(24, 12),
 
   overlayChildBuilder: (context) => Container(
     padding: const EdgeInsets.all(16),

@@ -11,7 +11,6 @@ const _defaultDebounceDuration = Duration(milliseconds: 50);
 const _defaultOffset = Offset.zero;
 const _defaultTriggerMode = PopoverTriggerMode.tap;
 const _defaultBarrierColor = Colors.transparent;
-const _defaultBorderRadius = 8.0;
 const _defaultTransitionDuration = Duration(milliseconds: 100);
 const _defaultConsumeOutsideTap = false;
 const _defaultCrossAxisAlignment = PopoverCrossAxisAlignment.start;
@@ -110,10 +109,9 @@ class Popover extends StatefulWidget {
     Color? barrierColor,
     PopoverAnchors? anchors,
     Color? backgroundColor,
-    double? borderRadius,
+    BorderRadius? borderRadius,
     ArrowShape? arrowShape,
-    double? arrowHeight,
-    double? arrowWidth,
+    Size? arrowSize,
     double? arrowAlignment,
     AxisDirection? preferredDirection,
     Axis? constrainAxis,
@@ -146,14 +144,12 @@ class Popover extends StatefulWidget {
           builder: (context) {
             return PopoverWithArrow(
               backgroundColor: backgroundColor,
-              borderRadius: borderRadius ?? _defaultBorderRadius,
-              arrowShape: arrowShape ?? const SharpArrow(),
-              arrowHeight: arrowHeight,
-              arrowWidth: arrowWidth,
+              borderRadius: borderRadius,
+              arrowShape: arrowShape,
+              arrowSize: arrowSize,
               arrowAlignment: arrowAlignment,
               boxShadow: boxShadow,
-              borderColor: border?.color,
-              borderWidth: border?.width,
+              border: border,
               child: overlayChildBuilder(context),
             );
           },

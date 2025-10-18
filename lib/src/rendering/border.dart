@@ -15,31 +15,23 @@ class PopoverShapeBorder extends ShapeBorder {
   /// 1.0 (end).
   final double? arrowAlignment;
 
-  /// The base width of the arrow.
-  final double? arrowWidth;
-
-  /// The height of the arrow from its base to its tip.
-  final double? arrowHeight;
+  /// The size of the arrow
+  final Size arrowSize;
 
   /// The border radius for the main body of the popover.
   final BorderRadius borderRadius;
 
-  /// The color of the border.
-  final Color? borderColor;
-
-  /// The width of the border.
-  final double borderWidth;
+  /// The border style, color, and width.
+  final BorderSide border;
 
   /// Creates a shape for a popover with an arrow.
   const PopoverShapeBorder({
     this.arrowShape = const SharpArrow(),
     required this.arrowDirection,
     this.arrowAlignment,
-    this.arrowWidth,
-    this.arrowHeight,
+    this.arrowSize = const Size(20.0, 10.0),
     this.borderRadius = BorderRadius.zero,
-    this.borderColor,
-    this.borderWidth = 1.0,
+    this.border = BorderSide.none,
   });
 
   @override
@@ -63,8 +55,8 @@ class PopoverShapeBorder extends ShapeBorder {
     late final Offset arrowBaseStart;
     late final Offset arrowBaseEnd;
     final arrowAlignment = this.arrowAlignment ?? 0.5;
-    final arrowWidth = this.arrowWidth ?? 20.0;
-    final arrowHeight = this.arrowHeight ?? 10.0;
+    final arrowWidth = arrowSize.width;
+    final arrowHeight = arrowSize.height;
 
     switch (arrowDirection) {
       case AxisDirection.up:
@@ -190,11 +182,11 @@ class PopoverShapeBorder extends ShapeBorder {
 
   @override
   void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
-    if (borderColor != null && borderWidth > 0) {
+    if (border.style != BorderStyle.none && border.width > 0) {
       final paint = Paint()
-        ..color = borderColor!
+        ..color = border.color
         ..style = PaintingStyle.stroke
-        ..strokeWidth = borderWidth;
+        ..strokeWidth = border.width;
 
       canvas.drawPath(getOuterPath(rect, textDirection: textDirection), paint);
     }
@@ -206,11 +198,9 @@ class PopoverShapeBorder extends ShapeBorder {
       arrowShape: arrowShape,
       arrowDirection: arrowDirection,
       arrowAlignment: arrowAlignment,
-      arrowWidth: (arrowWidth ?? 20.0) * t,
-      arrowHeight: (arrowHeight ?? 10.0) * t,
+      arrowSize: arrowSize * t,
       borderRadius: borderRadius * t,
-      borderColor: borderColor,
-      borderWidth: borderWidth * t,
+      border: border.scale(t),
     );
   }
 
@@ -222,11 +212,9 @@ class PopoverShapeBorder extends ShapeBorder {
           arrowShape == other.arrowShape &&
           arrowDirection == other.arrowDirection &&
           arrowAlignment == other.arrowAlignment &&
-          arrowWidth == other.arrowWidth &&
-          arrowHeight == other.arrowHeight &&
+          arrowSize == other.arrowSize &&
           borderRadius == other.borderRadius &&
-          borderColor == other.borderColor &&
-          borderWidth == other.borderWidth;
+          border == other.border;
 
   @override
   int get hashCode => Object.hash(
@@ -234,10 +222,8 @@ class PopoverShapeBorder extends ShapeBorder {
         arrowShape,
         arrowDirection,
         arrowAlignment,
-        arrowWidth,
-        arrowHeight,
+        arrowSize,
         borderRadius,
-        borderColor,
-        borderWidth,
+        border,
       );
 }

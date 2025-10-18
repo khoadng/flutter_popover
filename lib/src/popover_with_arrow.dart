@@ -26,7 +26,7 @@ class PopoverWithArrow extends StatelessWidget {
   final Color? backgroundColor;
 
   /// The border radius of the popover's corners.
-  final double? borderRadius;
+  final BorderRadius? borderRadius;
 
   /// The shape of the arrow.
   final ArrowShape? arrowShape;
@@ -37,17 +37,11 @@ class PopoverWithArrow extends StatelessWidget {
   /// The position of the arrow along the popover's edge (0.0 to 1.0).
   final double? arrowAlignment;
 
-  /// The width of the arrow's base.
-  final double? arrowWidth;
+  /// The size of the arrow
+  final Size? arrowSize;
 
-  /// The height of the arrow from its base to its tip.
-  final double? arrowHeight;
-
-  /// The color of the border.
-  final Color? borderColor;
-
-  /// The width of the border.
-  final double? borderWidth;
+  /// The border style, color, and width.
+  final BorderSide? border;
 
   /// A list of shadows to apply to the popover container.
   final List<BoxShadow>? boxShadow;
@@ -61,10 +55,8 @@ class PopoverWithArrow extends StatelessWidget {
     this.arrowShape,
     this.arrowDirection,
     this.arrowAlignment,
-    this.arrowWidth,
-    this.arrowHeight,
-    this.borderColor,
-    this.borderWidth,
+    this.arrowSize,
+    this.border,
     this.boxShadow,
   });
 
@@ -73,10 +65,11 @@ class PopoverWithArrow extends StatelessWidget {
     final controller = PopoverData.of(context);
     final anchors = controller.anchors;
 
-    final arrowHeight = this.arrowHeight ?? 10.0;
-    final arrowShape = this.arrowShape ?? const SharpArrow();
-    final borderRadius = this.borderRadius ?? 8.0;
-    final borderWidth = this.borderWidth ?? 0.0;
+    final effectiveArrowShape = arrowShape ?? const SharpArrow();
+    final effectiveArrowSize = arrowSize ?? const Size(20.0, 10.0);
+    final effectiveBorderRadius =
+        borderRadius ?? const BorderRadius.all(Radius.circular(8.0));
+    final effectiveBorder = border ?? BorderSide.none;
 
     final arrowInfo = ArrowInfo.fromAnchors(
       anchors: anchors,
@@ -84,33 +77,35 @@ class PopoverWithArrow extends StatelessWidget {
       userArrowAlignment: arrowAlignment,
     );
 
+    final effectiveBackgroundColor =
+        backgroundColor ?? Theme.of(context).colorScheme.surfaceContainer;
+
     return Container(
       decoration: ShapeDecoration(
-        color: backgroundColor,
+        color: effectiveBackgroundColor,
         shape: PopoverShapeBorder(
-          arrowShape: arrowShape,
+          arrowShape: effectiveArrowShape,
           arrowDirection: arrowInfo.direction,
           arrowAlignment: arrowInfo.alignment,
-          arrowWidth: arrowWidth,
-          arrowHeight: arrowHeight,
-          borderRadius: BorderRadius.circular(borderRadius),
-          borderColor: borderColor,
-          borderWidth: borderWidth,
+          arrowSize: effectiveArrowSize,
+          borderRadius: effectiveBorderRadius,
+          border: effectiveBorder,
         ),
-        shadows: boxShadow ??
-            [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 4,
-                offset: Offset(0, 2),
-              ),
-            ],
+        shadows: boxShadow,
       ),
       margin: EdgeInsets.only(
-        top: arrowInfo.direction == AxisDirection.up ? arrowHeight : 0,
-        bottom: arrowInfo.direction == AxisDirection.down ? arrowHeight : 0,
-        left: arrowInfo.direction == AxisDirection.left ? arrowHeight : 0,
-        right: arrowInfo.direction == AxisDirection.right ? arrowHeight : 0,
+        top: arrowInfo.direction == AxisDirection.up
+            ? effectiveArrowSize.height
+            : 0,
+        bottom: arrowInfo.direction == AxisDirection.down
+            ? effectiveArrowSize.height
+            : 0,
+        left: arrowInfo.direction == AxisDirection.left
+            ? effectiveArrowSize.height
+            : 0,
+        right: arrowInfo.direction == AxisDirection.right
+            ? effectiveArrowSize.height
+            : 0,
       ),
       child: child,
     );

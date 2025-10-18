@@ -37,9 +37,9 @@ class GridDemo extends StatelessWidget {
             showDelay: const Duration(milliseconds: 300),
             barrierColor: Colors.black54,
             arrowShape: const RoundedArrow(),
-            borderRadius: 16,
+            borderRadius: BorderRadius.circular(16),
             consumeOutsideTap: true,
-            border: BorderSide(color: Colors.blue, width: 1),
+            border: const BorderSide(color: Colors.blue, width: 1),
             overlayChildBuilder: (context) =>
                 _TooltipContainer(title: 'Grid Item $index'),
             child: Container(
