@@ -1,5 +1,10 @@
 # Flutter Popover
 
+<a href="https://pub.dev/packages/flutter_popover">
+    <img src="https://img.shields.io/pub/v/flutter_popover" alt="pub package">
+</a>  
+
+
 A versatile and easy-to-use popover widget for Flutter that supports tap, hover, and manual triggers. Ideal for tooltips, menus, and context-sensitive information displays.
 
 ## Features
