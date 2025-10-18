@@ -1,3 +1,7 @@
+### 0.0.4
+
+* Bug fixes and API surface cleanup
+
 ## 0.0.3
 
 * Fix various issues

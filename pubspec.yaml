@@ -1,6 +1,6 @@
 name: flutter_popover
 description: A versatile and highly customizable popover widget for Flutter, perfect for creating tooltips, menus, and more.
-version: 0.0.3
+version: 0.0.4
 homepage: https://github.com/khoadng/flutter_popover
 repository: https://github.com/khoadng/flutter_popover
 issue_tracker: https://github.com/khoadng/flutter_popover/issues
