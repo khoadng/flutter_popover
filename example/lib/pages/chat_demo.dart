@@ -1,4 +1,4 @@
-part of 'main.dart';
+part of '../main.dart';
 
 class ListViewDemo extends StatelessWidget {
   const ListViewDemo({super.key});

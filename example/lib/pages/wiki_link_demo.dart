@@ -1,4 +1,4 @@
-part of 'main.dart';
+part of '../main.dart';
 
 // Wikipedia-like Link Preview Demo
 class WikiLinkDemo extends StatelessWidget {

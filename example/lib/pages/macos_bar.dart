@@ -1,4 +1,4 @@
-part of 'main.dart';
+part of '../main.dart';
 
 class MacosBarDemo extends StatefulWidget {
   const MacosBarDemo({super.key});

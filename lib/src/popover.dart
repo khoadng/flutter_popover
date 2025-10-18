@@ -1,17 +1,16 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-import 'arrows.dart';
 import 'popover_anchors.dart';
 import 'popover_controller.dart';
 import 'popover_with_arrow.dart';
+import 'rendering/arrows.dart';
 
 const _defaultShowDelay = Duration.zero;
 const _defaultDebounceDuration = Duration(milliseconds: 50);
 const _defaultOffset = Offset.zero;
 const _defaultTriggerMode = PopoverTriggerMode.tap;
 const _defaultBarrierColor = Colors.transparent;
-const _defaultBackgroundColor = Colors.white;
 const _defaultBorderRadius = 8.0;
 const _defaultTransitionDuration = Duration(milliseconds: 100);
 const _defaultConsumeOutsideTap = false;
@@ -146,7 +145,7 @@ class Popover extends StatefulWidget {
         return Builder(
           builder: (context) {
             return PopoverWithArrow(
-              backgroundColor: backgroundColor ?? _defaultBackgroundColor,
+              backgroundColor: backgroundColor,
               borderRadius: borderRadius ?? _defaultBorderRadius,
               arrowShape: arrowShape ?? const SharpArrow(),
               arrowHeight: arrowHeight,
@@ -247,7 +246,7 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: widget.transitionDuration,
+      duration: widget.transitionDuration ?? _defaultTransitionDuration,
     );
     _animationController.addStatusListener(_handleAnimationStatusChanged);
 

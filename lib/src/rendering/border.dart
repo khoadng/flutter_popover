@@ -1,0 +1,243 @@
+import 'package:flutter/rendering.dart';
+
+import 'arrows.dart';
+
+/// A [ShapeBorder] that draws a customizable speech bubble-like shape with
+/// an arrow.
+class PopoverShapeBorder extends ShapeBorder {
+  /// The shape of the arrow (e.g., sharp or rounded).
+  final ArrowShape arrowShape;
+
+  /// The direction the arrow points.
+  final AxisDirection arrowDirection;
+
+  /// The position of the arrow along the popover edge, from 0.0 (start) to
+  /// 1.0 (end).
+  final double? arrowAlignment;
+
+  /// The base width of the arrow.
+  final double? arrowWidth;
+
+  /// The height of the arrow from its base to its tip.
+  final double? arrowHeight;
+
+  /// The border radius for the main body of the popover.
+  final BorderRadius borderRadius;
+
+  /// The color of the border.
+  final Color? borderColor;
+
+  /// The width of the border.
+  final double borderWidth;
+
+  /// Creates a shape for a popover with an arrow.
+  const PopoverShapeBorder({
+    this.arrowShape = const SharpArrow(),
+    required this.arrowDirection,
+    this.arrowAlignment,
+    this.arrowWidth,
+    this.arrowHeight,
+    this.borderRadius = BorderRadius.zero,
+    this.borderColor,
+    this.borderWidth = 1.0,
+  });
+
+  @override
+  EdgeInsetsGeometry get dimensions => EdgeInsets.zero;
+
+  @override
+  Path getInnerPath(Rect rect, {TextDirection? textDirection}) {
+    return getOuterPath(rect, textDirection: textDirection);
+  }
+
+  @override
+  Path getOuterPath(Rect rect, {TextDirection? textDirection}) {
+    final rrect = borderRadius.toRRect(rect);
+    return _buildArrowPath(rect, rrect);
+  }
+
+  Path _buildArrowPath(Rect rect, RRect rrect) {
+    final path = Path();
+
+    // Calculate arrow position based on alignment (0.0 to 1.0)
+    late final Offset arrowBaseStart;
+    late final Offset arrowBaseEnd;
+    final arrowAlignment = this.arrowAlignment ?? 0.5;
+    final arrowWidth = this.arrowWidth ?? 20.0;
+    final arrowHeight = this.arrowHeight ?? 10.0;
+
+    switch (arrowDirection) {
+      case AxisDirection.up:
+        final usableWidth = rect.width - rrect.tlRadiusX - rrect.trRadiusX;
+        final centerX =
+            rect.left + rrect.tlRadiusX + (usableWidth * arrowAlignment);
+        arrowBaseStart = Offset(centerX - arrowWidth / 2, rect.top);
+        arrowBaseEnd = Offset(centerX + arrowWidth / 2, rect.top);
+        break;
+      case AxisDirection.down:
+        final usableWidth = rect.width - rrect.blRadiusX - rrect.brRadiusX;
+        final centerX =
+            rect.left + rrect.blRadiusX + (usableWidth * arrowAlignment);
+        arrowBaseStart = Offset(centerX - arrowWidth / 2, rect.bottom);
+        arrowBaseEnd = Offset(centerX + arrowWidth / 2, rect.bottom);
+        break;
+      case AxisDirection.left:
+        final usableHeight = rect.height - rrect.tlRadiusY - rrect.blRadiusY;
+        final centerY =
+            rect.top + rrect.tlRadiusY + (usableHeight * arrowAlignment);
+        arrowBaseStart = Offset(rect.left, centerY - arrowWidth / 2);
+        arrowBaseEnd = Offset(rect.left, centerY + arrowWidth / 2);
+        break;
+      case AxisDirection.right:
+        final usableHeight = rect.height - rrect.trRadiusY - rrect.brRadiusY;
+        final centerY =
+            rect.top + rrect.trRadiusY + (usableHeight * arrowAlignment);
+        arrowBaseStart = Offset(rect.right, centerY - arrowWidth / 2);
+        arrowBaseEnd = Offset(rect.right, centerY + arrowWidth / 2);
+        break;
+    }
+
+    // Start from top-left, draw clockwise
+    path.moveTo(rrect.left, rrect.top + rrect.tlRadiusY);
+
+    // Top-left corner
+    if (rrect.tlRadius != Radius.zero) {
+      path.arcToPoint(
+        Offset(rrect.left + rrect.tlRadiusX, rrect.top),
+        radius: rrect.tlRadius,
+      );
+    }
+
+    // Top edge
+    if (arrowDirection == AxisDirection.up) {
+      path.lineTo(arrowBaseStart.dx, arrowBaseStart.dy);
+      arrowShape.buildArrowPath(
+        path: path,
+        baseStart: arrowBaseStart,
+        baseEnd: arrowBaseEnd,
+        direction: arrowDirection,
+        arrowHeight: arrowHeight,
+      );
+    }
+    path.lineTo(rrect.right - rrect.trRadiusX, rrect.top);
+
+    // Top-right corner
+    if (rrect.trRadius != Radius.zero) {
+      path.arcToPoint(
+        Offset(rrect.right, rrect.top + rrect.trRadiusY),
+        radius: rrect.trRadius,
+      );
+    }
+
+    // Right edge
+    if (arrowDirection == AxisDirection.right) {
+      path.lineTo(arrowBaseStart.dx, arrowBaseStart.dy);
+      arrowShape.buildArrowPath(
+        path: path,
+        baseStart: arrowBaseStart,
+        baseEnd: arrowBaseEnd,
+        direction: arrowDirection,
+        arrowHeight: arrowHeight,
+      );
+    }
+    path.lineTo(rrect.right, rrect.bottom - rrect.brRadiusY);
+
+    // Bottom-right corner
+    if (rrect.brRadius != Radius.zero) {
+      path.arcToPoint(
+        Offset(rrect.right - rrect.brRadiusX, rrect.bottom),
+        radius: rrect.brRadius,
+      );
+    }
+
+    // Bottom edge
+    if (arrowDirection == AxisDirection.down) {
+      path.lineTo(arrowBaseEnd.dx, arrowBaseEnd.dy);
+      arrowShape.buildArrowPath(
+        path: path,
+        baseStart: arrowBaseEnd,
+        baseEnd: arrowBaseStart,
+        direction: arrowDirection,
+        arrowHeight: arrowHeight,
+      );
+    }
+    path.lineTo(rrect.left + rrect.blRadiusX, rrect.bottom);
+
+    // Bottom-left corner
+    if (rrect.blRadius != Radius.zero) {
+      path.arcToPoint(
+        Offset(rrect.left, rrect.bottom - rrect.blRadiusY),
+        radius: rrect.blRadius,
+      );
+    }
+
+    // Left edge
+    if (arrowDirection == AxisDirection.left) {
+      path.lineTo(arrowBaseEnd.dx, arrowBaseEnd.dy);
+      arrowShape.buildArrowPath(
+        path: path,
+        baseStart: arrowBaseEnd,
+        baseEnd: arrowBaseStart,
+        direction: arrowDirection,
+        arrowHeight: arrowHeight,
+      );
+    }
+    path.lineTo(rrect.left, rrect.top + rrect.tlRadiusY);
+
+    path.close();
+    return path;
+  }
+
+  @override
+  void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
+    if (borderColor != null && borderWidth > 0) {
+      final paint = Paint()
+        ..color = borderColor!
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = borderWidth;
+
+      canvas.drawPath(getOuterPath(rect, textDirection: textDirection), paint);
+    }
+  }
+
+  @override
+  ShapeBorder scale(double t) {
+    return PopoverShapeBorder(
+      arrowShape: arrowShape,
+      arrowDirection: arrowDirection,
+      arrowAlignment: arrowAlignment,
+      arrowWidth: (arrowWidth ?? 20.0) * t,
+      arrowHeight: (arrowHeight ?? 10.0) * t,
+      borderRadius: borderRadius * t,
+      borderColor: borderColor,
+      borderWidth: borderWidth * t,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PopoverShapeBorder &&
+          runtimeType == other.runtimeType &&
+          arrowShape == other.arrowShape &&
+          arrowDirection == other.arrowDirection &&
+          arrowAlignment == other.arrowAlignment &&
+          arrowWidth == other.arrowWidth &&
+          arrowHeight == other.arrowHeight &&
+          borderRadius == other.borderRadius &&
+          borderColor == other.borderColor &&
+          borderWidth == other.borderWidth;
+
+  @override
+  int get hashCode => Object.hash(
+        runtimeType,
+        arrowShape,
+        arrowDirection,
+        arrowAlignment,
+        arrowWidth,
+        arrowHeight,
+        borderRadius,
+        borderColor,
+        borderWidth,
+      );
+}
