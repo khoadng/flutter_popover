@@ -315,10 +315,10 @@ class PopoverWithArrow extends StatelessWidget {
       finalArrowAlignment = arrowAlignment ?? kArrowAlignmentCenter;
     } else {
       // Adjust arrow alignment if cross-axis was flipped
-      final adjustedArrowAlignment =
-          anchors.isCrossAxisFlipped && arrowAlignment != null
-              ? arrowAlignment
-              : 1.0 - arrowAlignment!;
+      final adjustedArrowAlignment = switch (arrowAlignment) {
+        null => null,
+        final value => anchors.isCrossAxisFlipped ? value : 1.0 - value
+      };
 
       if (anchors.isLeft) {
         finalArrowDirection = AxisDirection.right;

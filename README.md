@@ -96,6 +96,7 @@ The popover automatically avoids screen overflow. You can guide its initial plac
 
   * **`preferredDirection`**: `AxisDirection.up`, `down`, `left`, or `right`.
   * **`crossAxisAlignment`**: `PopoverCrossAxisAlignment.start`, `center`, or `end` to align the popover along the perpendicular axis.
+  * **`overlayChildHeight` & `overlayChildWidth`**: Provide these when your popover content has a fixed size. This enables precise placement instead of just guessing which side has the most space.
 
 <!-- end list -->
 

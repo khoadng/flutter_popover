@@ -30,9 +30,7 @@ class GridDemo extends StatelessWidget {
           ];
 
           return Popover.arrow(
-            constrainAxis: null,
             crossAxisAlignment: PopoverCrossAxisAlignment.center,
-            preferredDirection: AxisDirection.right,
             backgroundColor: Colors.grey[900],
             overlayChildHeight: kTooltipHeight,
             overlayChildWidth: kTooltipWidth,

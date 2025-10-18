@@ -6,6 +6,17 @@ import 'popover_anchors.dart';
 import 'popover_controller.dart';
 import 'popover_with_arrow.dart';
 
+const _defaultShowDelay = Duration.zero;
+const _defaultDebounceDuration = Duration(milliseconds: 50);
+const _defaultOffset = Offset.zero;
+const _defaultTriggerMode = PopoverTriggerMode.tap;
+const _defaultBarrierColor = Colors.transparent;
+const _defaultBackgroundColor = Colors.white;
+const _defaultBorderRadius = 8.0;
+const _defaultTransitionDuration = Duration(milliseconds: 100);
+const _defaultConsumeOutsideTap = false;
+const _defaultCrossAxisAlignment = PopoverCrossAxisAlignment.start;
+
 /// Defines what user action triggers the popover to show and hide.
 enum PopoverTriggerMode {
   /// Shows the popover on mouse enter and hides on mouse exit.
@@ -63,37 +74,6 @@ class PopoverData extends InheritedWidget {
 /// The popover uses an [OverlayPortal] to display content, and it automatically
 /// positions itself to stay within the screen boundaries.
 class Popover extends StatefulWidget {
-  /// The default delay before showing the popover in hover mode.
-  static const Duration defaultShowDelay = Duration.zero;
-
-  /// The default debounce duration before hiding the popover in hover mode.
-  static const Duration defaultDebounceDuration = Duration(milliseconds: 50);
-
-  /// The default offset between the trigger and the popover.
-  static const Offset defaultOffset = Offset.zero;
-
-  /// The default trigger mode for the popover.
-  static const PopoverTriggerMode defaultTriggerMode = PopoverTriggerMode.tap;
-
-  /// The default color for the background barrier.
-  static const Color defaultBarrierColor = Colors.transparent;
-
-  /// The default background color for a popover with an arrow.
-  static const Color defaultBackgroundColor = Colors.white;
-
-  /// The default border radius for a popover with an arrow.
-  static const double defaultBorderRadius = 8.0;
-
-  /// The default duration for the entry and exit animations.
-  static const Duration defaultTransitionDuration = Duration(milliseconds: 100);
-
-  /// The default value for consuming tap events outside the popover.
-  static const bool defaultConsumeOutsideTap = false;
-
-  /// The default cross-axis alignment.
-  static const PopoverCrossAxisAlignment defaultCrossAxisAlignment =
-      PopoverCrossAxisAlignment.start;
-
   /// Creates a popover widget.
   const Popover({
     super.key,
@@ -109,9 +89,9 @@ class Popover extends StatefulWidget {
     this.barrierColor,
     this.anchors,
     this.preferredDirection,
-    this.constrainAxis = Axis.vertical,
+    this.constrainAxis,
     this.crossAxisAlignment,
-    this.transitionDuration = defaultTransitionDuration,
+    this.transitionDuration,
     this.transitionBuilder,
     this.consumeOutsideTap,
   });
@@ -137,7 +117,7 @@ class Popover extends StatefulWidget {
     double? arrowWidth,
     double? arrowAlignment,
     AxisDirection? preferredDirection,
-    Axis? constrainAxis = Axis.vertical,
+    Axis? constrainAxis,
     PopoverCrossAxisAlignment? crossAxisAlignment,
     Duration? transitionDuration,
     Widget Function(BuildContext, Animation<double>, Widget)? transitionBuilder,
@@ -159,17 +139,15 @@ class Popover extends StatefulWidget {
       preferredDirection: preferredDirection,
       constrainAxis: constrainAxis,
       crossAxisAlignment: crossAxisAlignment,
-      transitionDuration: transitionDuration ?? defaultTransitionDuration,
+      transitionDuration: transitionDuration ?? _defaultTransitionDuration,
       transitionBuilder: transitionBuilder,
       consumeOutsideTap: consumeOutsideTap,
       overlayChildBuilder: (context) {
-        // Use Builder to ensure PopoverWithArrow gets a context
-        // that has access to PopoverData
         return Builder(
           builder: (context) {
             return PopoverWithArrow(
-              backgroundColor: backgroundColor ?? defaultBackgroundColor,
-              borderRadius: borderRadius ?? defaultBorderRadius,
+              backgroundColor: backgroundColor ?? _defaultBackgroundColor,
+              borderRadius: borderRadius ?? _defaultBorderRadius,
               arrowShape: arrowShape ?? const SharpArrow(),
               arrowHeight: arrowHeight,
               arrowWidth: arrowWidth,
@@ -214,7 +192,7 @@ class Popover extends StatefulWidget {
   /// How the popover is triggered.
   final PopoverTriggerMode? triggerMode;
 
-  /// The color of the barrier behind the popover.
+  /// The color of the barrier behind the
   final Color? barrierColor;
 
   /// A fixed anchor configuration. If provided, automatic calculation is skipped.
@@ -230,7 +208,7 @@ class Popover extends StatefulWidget {
   final PopoverCrossAxisAlignment? crossAxisAlignment;
 
   /// The duration for the entry and exit animations.
-  final Duration transitionDuration;
+  final Duration? transitionDuration;
 
   /// A custom builder for the popover's animation.
   final Widget Function(
@@ -334,7 +312,7 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
 
   void _tryShow() {
     if (_overlayController.isShowing || (_showTimer?.isActive ?? false)) return;
-    final showDelay = widget.showDelay ?? Popover.defaultShowDelay;
+    final showDelay = widget.showDelay ?? _defaultShowDelay;
     _showTimer = Timer(showDelay, _showPopover);
   }
 
@@ -363,7 +341,7 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
       preferredDirection: widget.preferredDirection,
       constrainAxis: widget.constrainAxis,
       crossAxisAlignment:
-          widget.crossAxisAlignment ?? Popover.defaultCrossAxisAlignment,
+          widget.crossAxisAlignment ?? _defaultCrossAxisAlignment,
     );
 
     _controller.setAnchors(newAnchors);
@@ -373,7 +351,7 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
     _hideTimer?.cancel();
     if (!_isChildHovered.value && !_isOverlayHovered.value) {
       final debounceDuration =
-          widget.debounceDuration ?? Popover.defaultDebounceDuration;
+          widget.debounceDuration ?? _defaultDebounceDuration;
       _hideTimer = Timer(debounceDuration, _hidePopover);
     }
   }
@@ -409,7 +387,7 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final triggerMode = widget.triggerMode ?? Popover.defaultTriggerMode;
+    final triggerMode = widget.triggerMode ?? _defaultTriggerMode;
     final isManualMode = triggerMode == PopoverTriggerMode.manual;
     final enableHover =
         !isManualMode && triggerMode == PopoverTriggerMode.hover;
@@ -422,16 +400,16 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
           groupId: _tapRegionGroupId,
           onTapOutside: enableTap ? _handleTapOutside : null,
           consumeOutsideTaps:
-              widget.consumeOutsideTap ?? Popover.defaultConsumeOutsideTap,
+              widget.consumeOutsideTap ?? _defaultConsumeOutsideTap,
           child: Stack(
             children: [
               if (enableTap &&
-                  (widget.barrierColor ?? Popover.defaultBarrierColor) !=
+                  (widget.barrierColor ?? _defaultBarrierColor) !=
                       Colors.transparent)
                 Positioned.fill(
                   child: IgnorePointer(
                     child: Container(
-                      color: widget.barrierColor ?? Popover.defaultBarrierColor,
+                      color: widget.barrierColor ?? _defaultBarrierColor,
                     ),
                   ),
                 ),
@@ -439,7 +417,7 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
                 listenable: _controller,
                 builder: (context, _) {
                   final anchors = _controller.anchors;
-                  final offset = widget.offset ?? Popover.defaultOffset;
+                  final offset = widget.offset ?? _defaultOffset;
 
                   final popoverContent = PopoverData(
                     controller: _controller,
