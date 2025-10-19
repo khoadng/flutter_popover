@@ -1,3 +1,7 @@
+### 0.0.5
+
+* Sync popover state with controller changes to avoid inconsistencies
+
 ### 0.0.4
 
 * Bug fixes and API surface cleanup
