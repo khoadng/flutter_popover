@@ -117,7 +117,7 @@ class Popover extends StatefulWidget {
     Axis? constrainAxis,
     PopoverCrossAxisAlignment? crossAxisAlignment,
     Duration? transitionDuration,
-    Widget Function(BuildContext, Animation<double>, Widget)? transitionBuilder,
+    AnimatedTransitionBuilder? transitionBuilder,
     bool? consumeOutsideTap,
     List<BoxShadow>? boxShadow,
     BorderSide? border,
@@ -206,11 +206,7 @@ class Popover extends StatefulWidget {
   final Duration? transitionDuration;
 
   /// A custom builder for the popover's animation.
-  final Widget Function(
-    BuildContext context,
-    Animation<double> animation,
-    Widget child,
-  )? transitionBuilder;
+  final AnimatedTransitionBuilder? transitionBuilder;
 
   /// Whether a tap outside the popover is consumed, preventing it from reaching
   /// widgets below.
@@ -285,24 +281,31 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
     }
   }
 
+  // Sync is set to false to avoid infinite loops when the controller changes
   void _handleControllerChange() {
     if (_controller.isShowing) {
-      _showPopover();
+      _showPopover(sync: false);
     } else {
-      _hidePopover();
+      _hidePopover(sync: false);
     }
   }
 
-  void _showPopover() {
+  void _showPopover({bool sync = true}) {
     if (_overlayController.isShowing) return;
     _calculateAnchors();
     _overlayController.show();
     _animationController.forward();
+    if (sync && !_controller.isShowing) {
+      _controller.show();
+    }
   }
 
-  void _hidePopover() {
+  void _hidePopover({bool sync = true}) {
     if (!_overlayController.isShowing) return;
     _animationController.reverse();
+    if (sync && _controller.isShowing) {
+      _controller.hide();
+    }
   }
 
   void _tryShow() {
