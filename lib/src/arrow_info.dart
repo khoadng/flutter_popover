@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'popover_anchors.dart';
-import 'popover_with_arrow.dart';
+import 'anchors.dart';
+import 'arrow.dart';
 
 /// Contains calculated information about the arrow's direction and alignment
 /// for a popover.
@@ -59,8 +59,8 @@ class ArrowInfo {
       // User provided alignment: flip based on whether cross-axis was flipped
       // When NOT flipped, we need to invert (0.1 -> 0.9) because the alignment
       // is relative to the trigger edge, not the popover edge
-      final double value when !anchors.isCrossAxisFlipped => 1.0 - value,
-      final double value => value,
+      final double value when !anchors.isCrossAxisFlipped => value,
+      final double value => 1.0 - value,
       // Auto-calculate alignment from anchor position
       null => _calculateAutoAlignment(anchors: anchors, direction: direction),
     };

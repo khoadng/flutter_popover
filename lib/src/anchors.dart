@@ -2,6 +2,35 @@ import 'package:flutter/material.dart';
 
 typedef _Spaces = ({double above, double below, double left, double right});
 
+/// Defines how the popover should automatically flip to fit on screen.
+///
+/// The flip behavior controls both main-axis flipping (changing direction)
+/// and cross-axis flipping (changing alignment).
+enum FlipMode {
+  /// No automatic flipping. The popover stays in the preferred direction
+  /// and alignment, even if it overflows the screen.
+  none,
+
+  /// Only flip the main positioning axis (direction).
+  ///
+  /// For example, if the popover doesn't fit below, it will flip to appear above.
+  /// However, the cross-axis alignment (left/right for vertical popovers,
+  /// top/bottom for horizontal popovers) will not flip.
+  mainAxis,
+
+  /// Only flip the cross-axis alignment.
+  ///
+  /// The popover will stay in the preferred direction, but the alignment
+  /// may flip. For example, a popover below that is left-aligned may flip
+  /// to be right-aligned if there's not enough space on the right.
+  crossAxis,
+
+  /// Flip both main and cross axes as needed.
+  ///
+  /// The popover will flip its direction and alignment to best fit on screen.
+  both,
+}
+
 /// Defines how the popover aligns with its trigger along the cross-axis.
 ///
 /// The cross-axis is perpendicular to the main positioning axis. For vertical
@@ -86,11 +115,20 @@ class PopoverAnchors {
   /// Whether the popover is positioned to the right of the target.
   bool get isRight => followerAnchor.x < targetAnchor.x;
 
-  /// Whether the popover is aligned to the left side of the target.
-  bool get isLeftAligned => followerAnchor.x <= 0;
+  /// Returns the offset based on the popover's position direction.
+  Offset calculateOffset({double spacing = 8.0}) {
+    if (isAbove) {
+      return Offset(0, -spacing);
+    } else if (isBelow) {
+      return Offset(0, spacing);
+    } else if (isLeft) {
+      return Offset(-spacing, 0);
+    } else if (isRight) {
+      return Offset(spacing, 0);
+    }
 
-  /// Whether the popover is aligned to the right side of the target.
-  bool get isRightAligned => followerAnchor.x > 0;
+    return Offset.zero;
+  }
 
   /// Calculates the optimal `PopoverAnchors` based on available screen space.
   ///
@@ -100,21 +138,24 @@ class PopoverAnchors {
   /// - [leaderPosition]: The global position of the target widget.
   /// - [leaderSize]: The size of the target widget.
   /// - [screenSize]: The size of the screen or layout constraint.
-  /// - [overlayChildHeight]: The height of the popover content, if known.
-  /// - [overlayChildWidth]: The width of the popover content, if known.
+  /// - [contentHeight]: The height of the popover content, if known.
+  /// - [contentWidth]: The width of the popover content, if known.
   /// - [preferredDirection]: The desired direction to place the popover.
   /// - [constrainAxis]: An axis to constrain the popover's position to.
   /// - [crossAxisAlignment]: How to align the popover on the cross-axis.
+  /// - [flipMode]: Controls how the popover flips to fit on screen.
+  ///   Defaults to [FlipMode.both], which allows flipping both direction and alignment.
   static PopoverAnchors calculate({
     required Offset leaderPosition,
     required Size leaderSize,
     required Size screenSize,
-    double? overlayChildHeight,
-    double? overlayChildWidth,
+    double? contentHeight,
+    double? contentWidth,
     AxisDirection? preferredDirection,
     Axis? constrainAxis,
     PopoverCrossAxisAlignment crossAxisAlignment =
         PopoverCrossAxisAlignment.start,
+    FlipMode? flipMode,
   }) {
     // Derive preferredDirection from constrainAxis if null
     preferredDirection ??= switch (constrainAxis) {
@@ -143,16 +184,22 @@ class PopoverAnchors {
       right: screenSize.width - (leaderPosition.dx + leaderSize.width),
     );
 
-    final direction = _chooseDirection(
-      spaces: spaces,
-      preferredDirection: preferredDirection,
-      constrainAxis: constrainAxis,
-      overlayChildHeight: overlayChildHeight,
-      overlayChildWidth: overlayChildWidth,
-      leaderPosition: leaderPosition,
-      leaderSize: leaderSize,
-      screenSize: screenSize,
-    );
+    // Apply default flipMode early to ensure it's used in all logic
+    final effectiveFlipMode = flipMode ?? FlipMode.both;
+
+    final direction = effectiveFlipMode == FlipMode.mainAxis ||
+            effectiveFlipMode == FlipMode.both
+        ? _chooseDirection(
+            spaces: spaces,
+            preferredDirection: preferredDirection,
+            constrainAxis: constrainAxis,
+            contentHeight: contentHeight,
+            contentWidth: contentWidth,
+            leaderPosition: leaderPosition,
+            leaderSize: leaderSize,
+            screenSize: screenSize,
+          )
+        : preferredDirection;
 
     return _buildAnchorsForDirection(
       direction: direction,
@@ -160,9 +207,10 @@ class PopoverAnchors {
       leaderPosition: leaderPosition,
       leaderSize: leaderSize,
       screenSize: screenSize,
-      overlayChildWidth: overlayChildWidth,
-      overlayChildHeight: overlayChildHeight,
+      contentWidth: contentWidth,
+      contentHeight: contentHeight,
       crossAxisAlignment: crossAxisAlignment,
+      flipMode: effectiveFlipMode,
     );
   }
 
@@ -170,8 +218,8 @@ class PopoverAnchors {
     required _Spaces spaces,
     required AxisDirection preferredDirection,
     required Axis? constrainAxis,
-    required double? overlayChildHeight,
-    required double? overlayChildWidth,
+    required double? contentHeight,
+    required double? contentWidth,
     required Offset leaderPosition,
     required Size leaderSize,
     required Size screenSize,
@@ -199,8 +247,8 @@ class PopoverAnchors {
           .where((direction) => _directionFits(
                 direction: direction,
                 spaces: spaces,
-                overlayChildHeight: overlayChildHeight,
-                overlayChildWidth: overlayChildWidth,
+                contentHeight: contentHeight,
+                contentWidth: contentWidth,
                 leaderPosition: leaderPosition,
                 leaderSize: leaderSize,
                 screenSize: screenSize,
@@ -223,8 +271,8 @@ class PopoverAnchors {
         _directionFits(
           direction: preferredDirection,
           spaces: spaces,
-          overlayChildHeight: overlayChildHeight,
-          overlayChildWidth: overlayChildWidth,
+          contentHeight: contentHeight,
+          contentWidth: contentWidth,
           leaderPosition: leaderPosition,
           leaderSize: leaderSize,
           screenSize: screenSize,
@@ -238,8 +286,8 @@ class PopoverAnchors {
         _directionFits(
           direction: oppositeDirection,
           spaces: spaces,
-          overlayChildHeight: overlayChildHeight,
-          overlayChildWidth: overlayChildWidth,
+          contentHeight: contentHeight,
+          contentWidth: contentWidth,
           leaderPosition: leaderPosition,
           leaderSize: leaderSize,
           screenSize: screenSize,
@@ -282,26 +330,26 @@ class PopoverAnchors {
   static bool _directionFits({
     required AxisDirection direction,
     required _Spaces spaces,
-    required double? overlayChildHeight,
-    required double? overlayChildWidth,
+    required double? contentHeight,
+    required double? contentWidth,
     required Offset leaderPosition,
     required Size leaderSize,
     required Size screenSize,
   }) {
     return switch (direction) {
-      AxisDirection.up => switch (overlayChildHeight) {
+      AxisDirection.up => switch (contentHeight) {
           final double height => spaces.above >= height,
           null => true,
         },
-      AxisDirection.down => switch (overlayChildHeight) {
+      AxisDirection.down => switch (contentHeight) {
           final double height => spaces.below >= height,
           null => true,
         },
-      AxisDirection.left => switch (overlayChildWidth) {
+      AxisDirection.left => switch (contentWidth) {
           final double width => spaces.left >= width,
           null => true,
         },
-      AxisDirection.right => switch (overlayChildWidth) {
+      AxisDirection.right => switch (contentWidth) {
           final double width => spaces.right >= width,
           null => true,
         },
@@ -314,9 +362,10 @@ class PopoverAnchors {
     required Offset leaderPosition,
     required Size leaderSize,
     required Size screenSize,
-    required double? overlayChildWidth,
-    required double? overlayChildHeight,
+    required double? contentWidth,
+    required double? contentHeight,
     required PopoverCrossAxisAlignment crossAxisAlignment,
+    required FlipMode flipMode,
   }) {
     return switch (direction) {
       AxisDirection.up => _buildVerticalAnchors(
@@ -325,8 +374,9 @@ class PopoverAnchors {
           leaderPosition: leaderPosition,
           leaderSize: leaderSize,
           screenSize: screenSize,
-          overlayChildWidth: overlayChildWidth,
+          contentWidth: contentWidth,
           crossAxisAlignment: crossAxisAlignment,
+          flipMode: flipMode,
         ),
       AxisDirection.down => _buildVerticalAnchors(
           isAbove: false,
@@ -334,8 +384,9 @@ class PopoverAnchors {
           leaderPosition: leaderPosition,
           leaderSize: leaderSize,
           screenSize: screenSize,
-          overlayChildWidth: overlayChildWidth,
+          contentWidth: contentWidth,
           crossAxisAlignment: crossAxisAlignment,
+          flipMode: flipMode,
         ),
       AxisDirection.left => _buildHorizontalAnchors(
           isLeft: true,
@@ -343,8 +394,9 @@ class PopoverAnchors {
           leaderPosition: leaderPosition,
           leaderSize: leaderSize,
           screenSize: screenSize,
-          overlayChildHeight: overlayChildHeight,
+          contentHeight: contentHeight,
           crossAxisAlignment: crossAxisAlignment,
+          flipMode: flipMode,
         ),
       AxisDirection.right => _buildHorizontalAnchors(
           isLeft: false,
@@ -352,8 +404,9 @@ class PopoverAnchors {
           leaderPosition: leaderPosition,
           leaderSize: leaderSize,
           screenSize: screenSize,
-          overlayChildHeight: overlayChildHeight,
+          contentHeight: contentHeight,
           crossAxisAlignment: crossAxisAlignment,
+          flipMode: flipMode,
         ),
     };
   }
@@ -364,31 +417,33 @@ class PopoverAnchors {
     required Offset leaderPosition,
     required Size leaderSize,
     required Size screenSize,
-    required double? overlayChildWidth,
+    required double? contentWidth,
     required PopoverCrossAxisAlignment crossAxisAlignment,
+    required FlipMode flipMode,
   }) {
     final targetY = isAbove ? -1.0 : 1.0;
     final followerY = isAbove ? 1.0 : -1.0;
+    final allowCrossAxisFlip =
+        flipMode == FlipMode.crossAxis || flipMode == FlipMode.both;
 
     switch (crossAxisAlignment) {
       case PopoverCrossAxisAlignment.start:
-        // Start alignment: left edge by default, flip to right if not enough space
-        final showOnRight = _shouldShowOnRight(
-          leaderX: leaderPosition.dx,
-          leaderWidth: leaderSize.width,
-          screenWidth: screenSize.width,
-          spaces: spaces,
-          overlayChildWidth: overlayChildWidth,
-        );
-        final x = showOnRight ? -1.0 : 1.0; // left edge or right edge
+        final shouldFlip = allowCrossAxisFlip &&
+            !_shouldShowOnRight(
+              leaderX: leaderPosition.dx,
+              leaderWidth: leaderSize.width,
+              screenWidth: screenSize.width,
+              spaces: spaces,
+              contentWidth: contentWidth,
+            );
+        final x = shouldFlip ? 1.0 : -1.0;
         return PopoverAnchors(
           targetAnchor: Alignment(x, targetY),
           followerAnchor: Alignment(x, followerY),
-          isCrossAxisFlipped: showOnRight,
+          isCrossAxisFlipped: shouldFlip,
         );
 
       case PopoverCrossAxisAlignment.center:
-        // Center alignment: always center, no flipping
         return PopoverAnchors(
           targetAnchor: Alignment(0.0, targetY),
           followerAnchor: Alignment(0.0, followerY),
@@ -396,15 +451,14 @@ class PopoverAnchors {
         );
 
       case PopoverCrossAxisAlignment.end:
-        // End alignment: right edge by default, flip to left if not enough space
-        final canFitOnLeft = overlayChildWidth == null ||
-            leaderPosition.dx + leaderSize.width - overlayChildWidth >= 0;
-        final x =
-            canFitOnLeft ? 1.0 : -1.0; // right edge or left edge (flipped)
+        final canFitOnLeft = contentWidth == null ||
+            leaderPosition.dx + leaderSize.width - contentWidth >= 0;
+        final shouldFlip = allowCrossAxisFlip && !canFitOnLeft;
+        final x = shouldFlip ? -1.0 : 1.0;
         return PopoverAnchors(
           targetAnchor: Alignment(x, targetY),
           followerAnchor: Alignment(x, followerY),
-          isCrossAxisFlipped: !canFitOnLeft,
+          isCrossAxisFlipped: shouldFlip,
         );
     }
   }
@@ -415,31 +469,33 @@ class PopoverAnchors {
     required Offset leaderPosition,
     required Size leaderSize,
     required Size screenSize,
-    required double? overlayChildHeight,
+    required double? contentHeight,
     required PopoverCrossAxisAlignment crossAxisAlignment,
+    required FlipMode flipMode,
   }) {
     final targetX = isLeft ? -1.0 : 1.0;
     final followerX = isLeft ? 1.0 : -1.0;
+    final allowCrossAxisFlip =
+        flipMode == FlipMode.crossAxis || flipMode == FlipMode.both;
 
     switch (crossAxisAlignment) {
       case PopoverCrossAxisAlignment.start:
-        // Start alignment: top edge by default, flip to bottom if not enough space
-        final showOnBottom = _shouldShowOnBottom(
-          leaderY: leaderPosition.dy,
-          leaderHeight: leaderSize.height,
-          screenHeight: screenSize.height,
-          spaces: spaces,
-          overlayChildHeight: overlayChildHeight,
-        );
-        final y = showOnBottom ? -1.0 : 1.0; // top edge or bottom edge
+        final shouldFlip = allowCrossAxisFlip &&
+            !_shouldShowOnBottom(
+              leaderY: leaderPosition.dy,
+              leaderHeight: leaderSize.height,
+              screenHeight: screenSize.height,
+              spaces: spaces,
+              contentHeight: contentHeight,
+            );
+        final y = shouldFlip ? 1.0 : -1.0;
         return PopoverAnchors(
           targetAnchor: Alignment(targetX, y),
           followerAnchor: Alignment(followerX, y),
-          isCrossAxisFlipped: showOnBottom,
+          isCrossAxisFlipped: shouldFlip,
         );
 
       case PopoverCrossAxisAlignment.center:
-        // Center alignment: always center, no flipping
         return PopoverAnchors(
           targetAnchor: Alignment(targetX, 0.0),
           followerAnchor: Alignment(followerX, 0.0),
@@ -447,14 +503,14 @@ class PopoverAnchors {
         );
 
       case PopoverCrossAxisAlignment.end:
-        // End alignment: bottom edge by default, flip to top if not enough space
-        final canFitAbove = overlayChildHeight == null ||
-            leaderPosition.dy + leaderSize.height - overlayChildHeight >= 0;
-        final y = canFitAbove ? 1.0 : -1.0; // bottom edge or top edge (flipped)
+        final canFitAbove = contentHeight == null ||
+            leaderPosition.dy + leaderSize.height - contentHeight >= 0;
+        final shouldFlip = allowCrossAxisFlip && !canFitAbove;
+        final y = shouldFlip ? -1.0 : 1.0;
         return PopoverAnchors(
           targetAnchor: Alignment(targetX, y),
           followerAnchor: Alignment(followerX, y),
-          isCrossAxisFlipped: !canFitAbove,
+          isCrossAxisFlipped: shouldFlip,
         );
     }
   }
@@ -464,9 +520,9 @@ class PopoverAnchors {
     required double leaderWidth,
     required double screenWidth,
     required _Spaces spaces,
-    double? overlayChildWidth,
+    double? contentWidth,
   }) =>
-      switch (overlayChildWidth) {
+      switch (contentWidth) {
         final double width => switch ((
             fitsRight: leaderX + width <= screenWidth, // Can fit on right
             fitsLeft: leaderX + leaderWidth - width >= 0, // Can fit on left
@@ -484,9 +540,9 @@ class PopoverAnchors {
     required double leaderHeight,
     required double screenHeight,
     required _Spaces spaces,
-    double? overlayChildHeight,
+    double? contentHeight,
   }) =>
-      switch (overlayChildHeight) {
+      switch (contentHeight) {
         final double height => switch ((
             fitsBottom: leaderY + height <= screenHeight, // Can fit on bottom
             fitsTop: leaderY + leaderHeight - height >= 0, // Can fit on top

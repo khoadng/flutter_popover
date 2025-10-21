@@ -7,15 +7,6 @@
 
 A versatile and easy-to-use popover widget for Flutter that supports tap, hover, and manual triggers. Ideal for tooltips, menus, and context-sensitive information displays.
 
-## Features
-
-  * **Multiple Trigger Modes**: Show popovers on `tap`, `hover`, or `manual` control.
-  * **Smart Positioning**: Automatically positions the popover to stay within the screen bounds.
-  * **Customizable Arrows**: Includes `SharpArrow` and `RoundedArrow`, or you can create your own `ArrowShape`.
-  * **Flexible Alignment**: Control vertical and horizontal alignment with `preferredDirection` and `crossAxisAlignment`.
-  * **Manual Control**: Use a `PopoverController` for programmatic show/hide functionality.
-  * **Animated Transitions**: Smooth fade-in and fade-out animations, fully customizable.
-
 ## Getting Started
 
 Add this to your package's `pubspec.yaml` file:
@@ -31,12 +22,12 @@ Then, run `flutter pub get` in your terminal.
 
 ### Basic Popover
 
-Wrap any widget with the `Popover` widget and provide an `overlayChildBuilder` to define the content of the popover.
+Wrap any widget with the `Popover` widget and provide an `contentBuilder` to define the content of the popover.
 
 ```dart
 Popover(
   child: const Icon(Icons.info),
-  overlayChildBuilder: (context) => Container(
+  contentBuilder: (context) => Container(
     padding: const EdgeInsets.all(12),
     child: const Text('This is some helpful information.'),
   ),
@@ -51,8 +42,8 @@ For a classic tooltip with an arrow, use the `Popover.arrow` factory constructor
 Popover.arrow(
   child: const Icon(Icons.help),
   backgroundColor: Colors.grey[800],
-  arrowShape: const RoundedArrow(),
-  overlayChildBuilder: (context) => Container(
+  arrowShape: const RoundedArrow(), // or SharpArrow()
+  contentBuilder: (context) => Container(
     padding: const EdgeInsets.all(12),
     child: const Text(
       'This tooltip has a rounded arrow.',
@@ -62,22 +53,31 @@ Popover.arrow(
 );
 ```
 
+### Text Tooltips
+
+For simple text tooltips, use the `Popover.tooltip` factory. It defaults to a hover trigger.
+
+```dart
+Popover.tooltip(
+  child: const Icon(Icons.help),
+  message: const Text('This is a simple text tooltip.'),
+);
+```
+
 ### Trigger Modes
 
 Control how the popover is shown with `triggerMode`:
 
-  * `PopoverTriggerMode.tap` (Default): Shows and hides on tap.
-  * `PopoverTriggerMode.hover`: Shows on hover, ideal for desktop and web.
-  * `PopoverTriggerMode.manual`: Control visibility with a `PopoverController`.
-
-<!-- end list -->
+  * `TapTriggerMode()` (Default): Shows and hides on tap.
+  * `HoverTriggerMode()`: Shows on hover, ideal for desktop and web.
+  * `ManualTriggerMode()`: Control visibility with a `PopoverController`.
 
 ```dart
 // Hover Trigger
 Popover(
-  triggerMode: PopoverTriggerMode.hover,
+  triggerMode: const HoverTriggerMode(),
   child: const Text('Hover over me'),
-  overlayChildBuilder: (context) => const Text('Hello!'),
+  contentBuilder: (context) => const Text('Hello!'),
 );
 
 // Manual Trigger
@@ -85,9 +85,9 @@ final controller = PopoverController();
 
 Popover(
   controller: controller,
-  triggerMode: PopoverTriggerMode.manual,
+  triggerMode: const ManualTriggerMode(),
   child: const Text('A widget'),
-  overlayChildBuilder: (context) => const Text('Content'),
+  contentBuilder: (context) => const Text('Content'),
 );
 
 // Then, show or hide it when you need to:
@@ -97,41 +97,40 @@ controller.hide();
 
 ### Positioning
 
-The popover automatically avoids screen overflow. You can guide its initial placement with:
+Guide the popover's placement with:
 
   * **`preferredDirection`**: `AxisDirection.up`, `down`, `left`, or `right`.
-  * **`crossAxisAlignment`**: `PopoverCrossAxisAlignment.start`, `center`, or `end` to align the popover along the perpendicular axis.
-  * **`overlayChildHeight` & `overlayChildWidth`**: Provide these when your popover content has a fixed size. This enables precise placement instead of just guessing which side has the most space.
-
-<!-- end list -->
+  * **`crossAxisAlignment`**: `PopoverCrossAxisAlignment.start`, `center`, or `end`.
+  * **`contentHeight` & `contentWidth`**: Provide for fixed-size content to ensure accurate positioning.
+  * **`flipMode`**: Control how the popover flips to fit:
+    - `FlipMode.both` (default): Flips both direction and alignment to fit.
+    - `FlipMode.mainAxis`: Only flips direction.
+    - `FlipMode.crossAxis`: Only flips alignment.
+    - `FlipMode.none`: No flipping; may overflow.
 
 ```dart
 Popover.arrow(
   child: const Text('Click me'),
   preferredDirection: AxisDirection.down,
   crossAxisAlignment: PopoverCrossAxisAlignment.center,
-  overlayChildBuilder: (context) => const Text('I am centered below!'),
+  contentBuilder: (context) => const Text('I am centered below!'),
 );
 ```
 
 ## Examples
 
-This package includes a collection of demos to showcase its capabilities:
+See the `/example` directory for demos:
 
-  * **Grid Demo**: Demonstrates tooltips on a `GridView`.
-  * **Chat Demo**: A Microsoft Teams-like chat interface with hover-triggered emoji reactions.
-  * **Wikipedia-like Links**: Shows preview popovers when hovering over links in a block of text.
-  * **macOS Menu Bar**: An example of creating status bar menus with manual triggers.
-
-You can find the code for these in the `/example` directory.
+  * **Grid Demo**: Tooltips on a `GridView`.
+  * **Chat Demo**: Microsoft Teams-like emoji reactions.
+  * **Wikipedia-like Links**: Hover-to-preview links.
+  * **macOS Desktop**: Status bar menus with manual triggers.
 
 ## Customization
 
-Take full control over the appearance and behavior of your popovers.
-
 ### Styling the Popover and Arrow
 
-Use the `Popover.arrow` constructor for easy and extensive styling. You can customize everything from the background color and border radius to the shape and size of the arrow.
+Customize the popover's appearance using `Popover.arrow` parameters.
 
 ```dart
 Popover.arrow(
@@ -152,7 +151,7 @@ Popover.arrow(
   arrowShape: const RoundedArrow(spread: 0.5, liftOff: 0.2),
   arrowSize: const Size(24, 12),
 
-  overlayChildBuilder: (context) => Container(
+  contentBuilder: (context) => Container(
     padding: const EdgeInsets.all(16),
     child: const Text(
       'A highly customized popover.',
@@ -164,15 +163,33 @@ Popover.arrow(
 
 ### Advanced Behavior
 
-Fine-tune the interaction details for a smoother user experience, especially for hover triggers.
+Configure trigger modes for advanced interactions:
 
-  * **`showDelay` & `debounceDuration`**: Add delays to prevent popovers from flashing on screen when the mouse quickly moves over triggers.
-  * **`barrierColor`**: For `tap` triggers, you can add a colored barrier behind the popover to dim the background content.
-  * **`consumeOutsideTap`**: Control whether a tap outside the popover should be consumed (closing the popover only) or passed through to the UI behind it.
+```dart
+// Hover trigger with delays
+Popover(
+  triggerMode: const HoverTriggerMode(
+    showDelay: Duration(milliseconds: 300),
+    debounceDuration: Duration(milliseconds: 100),
+  ),
+  child: const Text('Hover over me'),
+  contentBuilder: (context) => const Text('Delayed tooltip'),
+);
+
+// Tap trigger with backdrop and outside tap handling
+Popover(
+  triggerMode: const TapTriggerMode(
+    consumeOutsideTap: true,
+  ),
+  backdropBuilder: (context) => Container(color: Colors.black54),
+  child: const Text('Click me'),
+  contentBuilder: (context) => const Text('Modal-like popover'),
+);
+```
 
 ### Custom Animations
 
-While the default fade transition works well for most cases, you can supply your own `transitionBuilder` to create unique entrance and exit animations, such as a scale or slide transition.
+Supply a `transitionBuilder` for custom animations.
 
 ```dart
 Popover(
@@ -184,10 +201,10 @@ Popover(
       child: child,
     );
   },
-  overlayChildBuilder: (context) => const Text('I scale in!'),
+  contentBuilder: (context) => const Text('I scale in!'),
 );
 ```
 
 ## Contributing
 
-Contributions are welcome\! If you find a bug or have a feature request, please open an issue on the GitHub repository.
+Contributions are welcome! If you find a bug or have a feature request, please open an issue on the GitHub repository.

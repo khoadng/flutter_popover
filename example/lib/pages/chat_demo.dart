@@ -94,15 +94,15 @@ class _ChatMessageState extends State<_ChatMessage> {
           ],
           Flexible(
             child: Popover(
-              overlayChildHeight: 80,
-              overlayChildWidth: 420,
-              triggerMode: PopoverTriggerMode.hover,
-              showDelay: const Duration(milliseconds: 200),
-              anchors: const PopoverAnchors(
-                targetAnchor: Alignment.topCenter,
-                followerAnchor: Alignment.bottomCenter,
+              contentHeight: 80,
+              contentWidth: 420,
+              triggerMode: const HoverTriggerMode(
+                showDelay: Duration(milliseconds: 200),
               ),
-              overlayChildBuilder: (context) => _EmojiReactionBar(
+              offset: Offset.zero,
+              preferredDirection: AxisDirection.up,
+              flipMode: FlipMode.none,
+              contentBuilder: (context) => _EmojiReactionBar(
                 onEmojiSelected: (emoji) {
                   setState(() {
                     selectedReaction = emoji;
@@ -266,13 +266,13 @@ class _EmojiButtonState extends State<_EmojiButton> {
   @override
   Widget build(BuildContext context) {
     return Popover(
-      triggerMode: PopoverTriggerMode.hover,
-      showDelay: const Duration(milliseconds: 400),
-      anchors: const PopoverAnchors(
-        targetAnchor: Alignment.topCenter,
-        followerAnchor: Alignment.bottomCenter,
+      triggerMode: const HoverTriggerMode(
+        showDelay: Duration(milliseconds: 400),
       ),
-      overlayChildBuilder: (context) => IntrinsicHeight(
+      preferredDirection: AxisDirection.up,
+      crossAxisAlignment: PopoverCrossAxisAlignment.center,
+      flipMode: FlipMode.none,
+      contentBuilder: (context) => IntrinsicHeight(
         child: IntrinsicWidth(
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

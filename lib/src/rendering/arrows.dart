@@ -60,6 +60,27 @@ class SharpArrow extends ArrowShape {
   }
 }
 
+/// An [ArrowShape] that renders no arrow at all.
+///
+/// Use this when you want the styled popover container without an arrow,
+/// such as for tooltips or simple popovers.
+class NoArrow extends ArrowShape {
+  /// Creates a no-arrow shape.
+  const NoArrow();
+
+  @override
+  void buildArrowPath({
+    required Path path,
+    required Offset baseStart,
+    required Offset baseEnd,
+    required AxisDirection direction,
+    required double arrowHeight,
+  }) {
+    // Simply draw a straight line from baseStart to baseEnd, no arrow
+    path.lineTo(baseEnd.dx, baseEnd.dy);
+  }
+}
+
 /// An [ArrowShape] that draws a smooth, curved arrow using cubic Bezier curves.
 class RoundedArrow extends ArrowShape {
   /// Controls the flatness of the arrow's peak.

@@ -209,15 +209,18 @@ class _WikiLinkState extends State<_WikiLink> {
   @override
   Widget build(BuildContext context) {
     return Popover.arrow(
-      overlayChildHeight: 180,
-      overlayChildWidth: 320,
-      triggerMode: PopoverTriggerMode.hover,
-      showDelay: const Duration(milliseconds: 400),
+      contentHeight: 180,
+      contentWidth: 320,
+      triggerMode: const HoverTriggerMode(
+        showDelay: Duration(milliseconds: 400),
+      ),
+      preferredDirection: AxisDirection.up,
+      constrainAxis: Axis.vertical,
       backgroundColor: const Color(0xFF1E293B),
-      arrowAlignment: 0.1,
+      arrowAlignment: 0.05,
       arrowSize: const Size(20, 10),
       borderRadius: BorderRadius.circular(8),
-      overlayChildBuilder: (context) => _WikiPreviewCardContent(
+      contentBuilder: (context) => _WikiPreviewCardContent(
         title: widget.previewTitle,
         content: widget.previewContent,
         icon: widget.previewImage,

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:example/widgets/demo_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_popover/flutter_popover.dart';
@@ -6,7 +8,7 @@ import 'package:intl/intl.dart';
 part 'pages/grid_demo.dart';
 part 'pages/chat_demo.dart';
 part 'pages/wiki_link_demo.dart';
-part 'pages/macos_bar.dart';
+part 'pages/macos_desktop_demo.dart';
 
 void main() {
   runApp(const MyApp());
@@ -66,12 +68,12 @@ class HomePage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           DemoCard(
-            title: 'macOS Menu Bar',
-            description: 'Popover menus with active state highlighting',
+            title: 'macOS Desktop',
+            description: 'Popover menus and dock with hover tooltips',
             icon: Icons.desktop_mac,
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const MacosBarDemo()),
+              MaterialPageRoute(builder: (_) => const MacosDesktopDemo()),
             ),
           ),
         ],

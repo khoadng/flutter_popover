@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'arrow_info.dart';
+import 'data.dart';
 import 'rendering/arrows.dart';
 import 'popover.dart';
 import 'rendering/border.dart';
@@ -13,6 +14,8 @@ const double kArrowAlignmentCenter = 0.5;
 
 /// Constant for aligning the arrow to the end of the popover edge.
 const double kArrowAlignmentEnd = 0.9;
+
+const double _defaultArrowSpacing = 8.0;
 
 /// A container widget that automatically applies a [PopoverShapeBorder] and
 /// handles arrow direction based on the popover's calculated position.
@@ -62,8 +65,10 @@ class PopoverWithArrow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = PopoverData.of(context);
+    final popoverData = PopoverData.of(context);
+    final controller = popoverData.controller;
     final anchors = controller.anchors;
+    final offset = popoverData.geometry.offset;
 
     final effectiveArrowShape = arrowShape ?? const SharpArrow();
     final effectiveArrowSize = arrowSize ?? const Size(20.0, 10.0);
@@ -80,6 +85,26 @@ class PopoverWithArrow extends StatelessWidget {
     final effectiveBackgroundColor =
         backgroundColor ?? Theme.of(context).colorScheme.surfaceContainer;
 
+    // Don't add margin for NoArrow shape
+    final hasArrow = effectiveArrowShape is! NoArrow;
+
+    // Calculate margin accounting for offset to prevent double spacing
+    double calculateMargin(AxisDirection direction) {
+      if (!hasArrow) return 0;
+
+      final offsetInDirection = switch (direction) {
+        AxisDirection.up => offset.dy.abs(),
+        AxisDirection.down => offset.dy.abs(),
+        AxisDirection.left => offset.dx.abs(),
+        AxisDirection.right => offset.dx.abs(),
+      };
+
+      // Margin = arrow height - offset component + some offset
+      return (effectiveArrowSize.height - offsetInDirection)
+              .clamp(0, double.infinity) +
+          _defaultArrowSpacing;
+    }
+
     return Container(
       decoration: ShapeDecoration(
         color: effectiveBackgroundColor,
@@ -93,20 +118,22 @@ class PopoverWithArrow extends StatelessWidget {
         ),
         shadows: boxShadow,
       ),
-      margin: EdgeInsets.only(
-        top: arrowInfo.direction == AxisDirection.up
-            ? effectiveArrowSize.height
-            : 0,
-        bottom: arrowInfo.direction == AxisDirection.down
-            ? effectiveArrowSize.height
-            : 0,
-        left: arrowInfo.direction == AxisDirection.left
-            ? effectiveArrowSize.height
-            : 0,
-        right: arrowInfo.direction == AxisDirection.right
-            ? effectiveArrowSize.height
-            : 0,
-      ),
+      margin: hasArrow
+          ? EdgeInsets.only(
+              top: arrowInfo.direction == AxisDirection.up
+                  ? calculateMargin(AxisDirection.up)
+                  : 0,
+              bottom: arrowInfo.direction == AxisDirection.down
+                  ? calculateMargin(AxisDirection.down)
+                  : 0,
+              left: arrowInfo.direction == AxisDirection.left
+                  ? calculateMargin(AxisDirection.left)
+                  : 0,
+              right: arrowInfo.direction == AxisDirection.right
+                  ? calculateMargin(AxisDirection.right)
+                  : 0,
+            )
+          : EdgeInsets.zero,
       child: child,
     );
   }

@@ -1,14 +1,15 @@
 part of '../main.dart';
 
-class MacosBarDemo extends StatefulWidget {
-  const MacosBarDemo({super.key});
+class MacosDesktopDemo extends StatefulWidget {
+  const MacosDesktopDemo({super.key});
 
   @override
-  State<MacosBarDemo> createState() => _MacosBarDemoState();
+  State<MacosDesktopDemo> createState() => _MacosDesktopDemoState();
 }
 
-class _MacosBarDemoState extends State<MacosBarDemo> {
+class _MacosDesktopDemoState extends State<MacosDesktopDemo> {
   String? _activeMenuKey;
+  bool _isDockOnLeft = false;
 
   final Map<String, PopoverController> _popoverControllers = {
     'music': PopoverController(),
@@ -48,11 +49,11 @@ class _MacosBarDemoState extends State<MacosBarDemo> {
     return Popover(
       crossAxisAlignment: PopoverCrossAxisAlignment.start,
       controller: _popoverControllers[key],
-      triggerMode: PopoverTriggerMode.manual,
-      barrierColor: Colors.transparent,
+      triggerMode: const ManualTriggerMode(),
       preferredDirection: AxisDirection.down,
+      constrainAxis: Axis.vertical,
       offset: const Offset(0, 10),
-      overlayChildBuilder: (context) => Container(
+      contentBuilder: (context) => Container(
         decoration: BoxDecoration(
           color: Colors.grey[850],
           borderRadius: BorderRadius.circular(8),
@@ -131,12 +132,53 @@ class _MacosBarDemoState extends State<MacosBarDemo> {
                 ],
               ),
             ),
-            const Expanded(
-              child: Center(
-                child: Text(
-                  'Click an icon in the top-right bar. 👆',
-                  style: TextStyle(color: Colors.grey),
-                ),
+            Expanded(
+              child: Stack(
+                children: [
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Click an icon in the top-right bar or hover over dock icons. 👆',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              _isDockOnLeft = !_isDockOnLeft;
+                            });
+                          },
+                          icon: Icon(
+                            _isDockOnLeft
+                                ? Icons.arrow_downward
+                                : Icons.arrow_back,
+                          ),
+                          label: Text(
+                            _isDockOnLeft
+                                ? 'Move Dock to Bottom'
+                                : 'Move Dock to Left',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (!_isDockOnLeft)
+                    Positioned(
+                      bottom: 16,
+                      left: 0,
+                      right: 0,
+                      child: Center(child: _MacosDock(isVertical: false)),
+                    ),
+                  if (_isDockOnLeft)
+                    Positioned(
+                      left: 16,
+                      top: 0,
+                      bottom: 0,
+                      child: Center(child: _MacosDock(isVertical: true)),
+                    ),
+                ],
               ),
             ),
           ],
@@ -410,6 +452,113 @@ class MenuBarClock extends StatelessWidget {
         color: Colors.black87,
         fontSize: 13,
         fontWeight: FontWeight.normal,
+      ),
+    );
+  }
+}
+
+/// A macOS-style dock with app icons and tooltips
+class _MacosDock extends StatelessWidget {
+  final bool isVertical;
+
+  _MacosDock({required this.isVertical});
+
+  final List<_DockApp> _apps = [
+    _DockApp(name: 'Finder', icon: Icons.folder, color: Colors.blue),
+    _DockApp(name: 'Safari', icon: Icons.language, color: Colors.blue[700]!),
+    _DockApp(name: 'Mail', icon: Icons.mail, color: Colors.blue[400]!),
+    _DockApp(name: 'Messages', icon: Icons.message, color: Colors.green),
+    _DockApp(
+      name: 'Photos',
+      icon: Icons.photo_library,
+      color: Colors.red[400]!,
+    ),
+    _DockApp(name: 'Music', icon: Icons.music_note, color: Colors.pink[400]!),
+    _DockApp(name: 'Calendar', icon: Icons.calendar_today, color: Colors.red),
+    _DockApp(name: 'Settings', icon: Icons.settings, color: Colors.grey[600]!),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.5),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: isVertical
+          ? Column(
+              spacing: 8,
+              mainAxisSize: MainAxisSize.min,
+              children: _apps
+                  .map((app) => _DockIcon(app: app, isVertical: isVertical))
+                  .toList(),
+            )
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: _apps
+                  .map((app) => _DockIcon(app: app, isVertical: isVertical))
+                  .toList(),
+            ),
+    );
+  }
+}
+
+class _DockApp {
+  final String name;
+  final IconData icon;
+  final Color color;
+
+  _DockApp({required this.name, required this.icon, required this.color});
+}
+
+/// A single app icon in the dock with tooltip
+class _DockIcon extends StatelessWidget {
+  final _DockApp app;
+  final bool isVertical;
+
+  const _DockIcon({required this.app, required this.isVertical});
+
+  @override
+  Widget build(BuildContext context) {
+    return Popover.tooltip(
+      message: Text(
+        app.name,
+        style: const TextStyle(color: Colors.white, fontSize: 12),
+      ),
+      preferredDirection: isVertical ? AxisDirection.right : AxisDirection.up,
+      constrainAxis: isVertical ? Axis.horizontal : Axis.vertical,
+      backgroundColor: Colors.grey[800],
+      arrowShape: const RoundedArrow(),
+      arrowSize: const Size(16, 8),
+      border: BorderSide(color: Colors.grey[700]!, width: 2),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          color: app.color,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Icon(app.icon, color: Colors.white, size: 28),
       ),
     );
   }

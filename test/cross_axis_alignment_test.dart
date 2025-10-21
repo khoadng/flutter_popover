@@ -10,8 +10,8 @@ void main() {
           leaderPosition: const Offset(50, 300),
           leaderSize: const Size(100, 50),
           screenSize: const Size(800, 600),
-          overlayChildHeight: 100,
-          overlayChildWidth: 200,
+          contentHeight: 100,
+          contentWidth: 200,
           preferredDirection: AxisDirection.down,
           constrainAxis: Axis.vertical,
           crossAxisAlignment: PopoverCrossAxisAlignment.start,
@@ -27,8 +27,8 @@ void main() {
           leaderPosition: const Offset(650, 300), // Near right edge
           leaderSize: const Size(100, 50),
           screenSize: const Size(800, 600),
-          overlayChildHeight: 100,
-          overlayChildWidth: 200, // Would overflow on right
+          contentHeight: 100,
+          contentWidth: 200, // Would overflow on right
           preferredDirection: AxisDirection.down,
           constrainAxis: Axis.vertical,
           crossAxisAlignment: PopoverCrossAxisAlignment.start,
@@ -46,8 +46,8 @@ void main() {
           leaderPosition: const Offset(300, 300),
           leaderSize: const Size(100, 50),
           screenSize: const Size(800, 600),
-          overlayChildHeight: 100,
-          overlayChildWidth: 200,
+          contentHeight: 100,
+          contentWidth: 200,
           preferredDirection: AxisDirection.down,
           constrainAxis: Axis.vertical,
           crossAxisAlignment: PopoverCrossAxisAlignment.center,
@@ -63,8 +63,8 @@ void main() {
           leaderPosition: const Offset(50, 300), // Close to left edge
           leaderSize: const Size(100, 50),
           screenSize: const Size(800, 600),
-          overlayChildHeight: 100,
-          overlayChildWidth: 200,
+          contentHeight: 100,
+          contentWidth: 200,
           preferredDirection: AxisDirection.down,
           constrainAxis: Axis.vertical,
           crossAxisAlignment: PopoverCrossAxisAlignment.center,
@@ -80,8 +80,8 @@ void main() {
           leaderPosition: const Offset(700, 300), // Close to right edge
           leaderSize: const Size(100, 50),
           screenSize: const Size(800, 600),
-          overlayChildHeight: 100,
-          overlayChildWidth: 200,
+          contentHeight: 100,
+          contentWidth: 200,
           preferredDirection: AxisDirection.down,
           constrainAxis: Axis.vertical,
           crossAxisAlignment: PopoverCrossAxisAlignment.center,
@@ -99,8 +99,8 @@ void main() {
           leaderPosition: const Offset(600, 300),
           leaderSize: const Size(100, 50),
           screenSize: const Size(800, 600),
-          overlayChildHeight: 100,
-          overlayChildWidth: 200,
+          contentHeight: 100,
+          contentWidth: 200,
           preferredDirection: AxisDirection.down,
           constrainAxis: Axis.vertical,
           crossAxisAlignment: PopoverCrossAxisAlignment.end,
@@ -116,8 +116,8 @@ void main() {
           leaderPosition: const Offset(50, 300), // Near left edge
           leaderSize: const Size(100, 50),
           screenSize: const Size(800, 600),
-          overlayChildHeight: 100,
-          overlayChildWidth: 200, // Would overflow on left
+          contentHeight: 100,
+          contentWidth: 200, // Would overflow on left
           preferredDirection: AxisDirection.down,
           constrainAxis: Axis.vertical,
           crossAxisAlignment: PopoverCrossAxisAlignment.end,
@@ -137,8 +137,8 @@ void main() {
           leaderPosition: const Offset(400, 50),
           leaderSize: const Size(100, 50),
           screenSize: const Size(800, 600),
-          overlayChildHeight: 200,
-          overlayChildWidth: 150,
+          contentHeight: 200,
+          contentWidth: 150,
           preferredDirection: AxisDirection.right,
           constrainAxis: Axis.horizontal,
           crossAxisAlignment: PopoverCrossAxisAlignment.start,
@@ -154,8 +154,8 @@ void main() {
           leaderPosition: const Offset(400, 450), // Near bottom edge
           leaderSize: const Size(100, 50),
           screenSize: const Size(800, 600),
-          overlayChildHeight: 200, // Would overflow below
-          overlayChildWidth: 150,
+          contentHeight: 200, // Would overflow below
+          contentWidth: 150,
           preferredDirection: AxisDirection.right,
           constrainAxis: Axis.horizontal,
           crossAxisAlignment: PopoverCrossAxisAlignment.start,
@@ -173,8 +173,8 @@ void main() {
           leaderPosition: const Offset(400, 300),
           leaderSize: const Size(100, 50),
           screenSize: const Size(800, 600),
-          overlayChildHeight: 200,
-          overlayChildWidth: 150,
+          contentHeight: 200,
+          contentWidth: 150,
           preferredDirection: AxisDirection.right,
           constrainAxis: Axis.horizontal,
           crossAxisAlignment: PopoverCrossAxisAlignment.center,
@@ -190,8 +190,8 @@ void main() {
           leaderPosition: const Offset(400, 50), // Close to top
           leaderSize: const Size(100, 50),
           screenSize: const Size(800, 600),
-          overlayChildHeight: 200,
-          overlayChildWidth: 150,
+          contentHeight: 200,
+          contentWidth: 150,
           preferredDirection: AxisDirection.right,
           constrainAxis: Axis.horizontal,
           crossAxisAlignment: PopoverCrossAxisAlignment.center,
@@ -207,8 +207,8 @@ void main() {
           leaderPosition: const Offset(400, 500), // Close to bottom
           leaderSize: const Size(100, 50),
           screenSize: const Size(800, 600),
-          overlayChildHeight: 200,
-          overlayChildWidth: 150,
+          contentHeight: 200,
+          contentWidth: 150,
           preferredDirection: AxisDirection.right,
           constrainAxis: Axis.horizontal,
           crossAxisAlignment: PopoverCrossAxisAlignment.center,
@@ -226,8 +226,8 @@ void main() {
           leaderPosition: const Offset(400, 400),
           leaderSize: const Size(100, 50),
           screenSize: const Size(800, 600),
-          overlayChildHeight: 200,
-          overlayChildWidth: 150,
+          contentHeight: 200,
+          contentWidth: 150,
           preferredDirection: AxisDirection.right,
           constrainAxis: Axis.horizontal,
           crossAxisAlignment: PopoverCrossAxisAlignment.end,
@@ -243,8 +243,8 @@ void main() {
           leaderPosition: const Offset(400, 50), // Near top edge
           leaderSize: const Size(100, 50),
           screenSize: const Size(800, 600),
-          overlayChildHeight: 200, // Would overflow above
-          overlayChildWidth: 150,
+          contentHeight: 200, // Would overflow above
+          contentWidth: 150,
           preferredDirection: AxisDirection.right,
           constrainAxis: Axis.horizontal,
           crossAxisAlignment: PopoverCrossAxisAlignment.end,

@@ -3,6 +3,29 @@ part of '../main.dart';
 const kTooltipHeight = 200.0;
 const kTooltipWidth = 200.0;
 
+class _BackdropClipper extends CustomClipper<Path> {
+  final Rect? exclude;
+
+  const _BackdropClipper({this.exclude});
+
+  @override
+  Path getClip(Size size) {
+    final path = Path()..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
+
+    if (exclude != null) {
+      path.addRect(exclude!);
+      path.fillType = PathFillType.evenOdd;
+    }
+
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant _BackdropClipper oldClipper) {
+    return exclude != oldClipper.exclude;
+  }
+}
+
 class GridDemo extends StatelessWidget {
   const GridDemo({super.key});
 
@@ -30,17 +53,24 @@ class GridDemo extends StatelessWidget {
           ];
 
           return Popover.arrow(
-            crossAxisAlignment: PopoverCrossAxisAlignment.center,
             backgroundColor: Colors.grey[900],
-            overlayChildHeight: kTooltipHeight,
-            overlayChildWidth: kTooltipWidth,
-            showDelay: const Duration(milliseconds: 300),
-            barrierColor: Colors.black54,
+            contentHeight: kTooltipHeight,
+            contentWidth: kTooltipWidth,
+            scrollBehavior: PopoverScrollBehavior.none,
+            triggerMode: const TapTriggerMode(consumeOutsideTap: true),
+            backdropBuilder: (context) => ClipPath(
+              clipper: _BackdropClipper(
+                exclude: PopoverData.of(context).geometry.triggerBounds,
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
+                child: Container(color: Colors.black26),
+              ),
+            ),
             arrowShape: const RoundedArrow(),
             borderRadius: BorderRadius.circular(16),
-            consumeOutsideTap: true,
             border: const BorderSide(color: Colors.blue, width: 1),
-            overlayChildBuilder: (context) =>
+            contentBuilder: (context) =>
                 _TooltipContainer(title: 'Grid Item $index'),
             child: Container(
               decoration: BoxDecoration(

@@ -1,6 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'popover_anchors.dart';
+import 'anchors.dart';
+import 'geometry.dart';
+import 'popover.dart';
 
 /// Manages the state of a [Popover], including its visibility and positioning.
 ///
@@ -13,12 +16,23 @@ class PopoverController extends ChangeNotifier {
     targetAnchor: Alignment.topLeft,
     followerAnchor: Alignment.bottomLeft,
   );
+  PopoverGeometry _geometry = const PopoverGeometry(
+    popoverBounds: null,
+    triggerBounds: null,
+    offset: Offset.zero,
+    direction: AxisDirection.down,
+    alignment: Alignment.topLeft,
+  );
 
   /// Whether the popover is currently showing.
   bool get isShowing => _isShowing;
 
   /// The current anchor configuration for positioning the popover.
   PopoverAnchors get anchors => _anchors;
+
+  /// The current geometry information for the popover.
+  @internal
+  PopoverGeometry get geometry => _geometry;
 
   /// Shows the popover.
   ///
@@ -53,9 +67,22 @@ class PopoverController extends ChangeNotifier {
   ///
   /// This is typically called internally by the [Popover] widget when it
   /// recalculates its position.
+  @internal
   void setAnchors(PopoverAnchors anchors) {
     if (_anchors != anchors) {
       _anchors = anchors;
+      notifyListeners();
+    }
+  }
+
+  /// Updates the popover's geometry.
+  ///
+  /// This is typically called internally by the [Popover] widget when it
+  /// recalculates its position.
+  @internal
+  void setGeometry(PopoverGeometry geometry) {
+    if (_geometry != geometry) {
+      _geometry = geometry;
       notifyListeners();
     }
   }

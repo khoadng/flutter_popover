@@ -1,113 +1,122 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-import 'popover_anchors.dart';
-import 'popover_controller.dart';
-import 'popover_with_arrow.dart';
+import 'anchors.dart';
+import 'controller.dart';
+import 'arrow.dart';
+import 'data.dart';
+import 'geometry.dart';
 import 'rendering/arrows.dart';
+import 'trigger.dart';
 
-const _defaultShowDelay = Duration.zero;
-const _defaultDebounceDuration = Duration(milliseconds: 50);
-const _defaultOffset = Offset.zero;
-const _defaultTriggerMode = PopoverTriggerMode.tap;
-const _defaultBarrierColor = Colors.transparent;
 const _defaultTransitionDuration = Duration(milliseconds: 100);
-const _defaultConsumeOutsideTap = false;
-const _defaultCrossAxisAlignment = PopoverCrossAxisAlignment.start;
-
-/// Defines what user action triggers the popover to show and hide.
-enum PopoverTriggerMode {
-  /// Shows the popover on mouse enter and hides on mouse exit.
-  hover,
-
-  /// Toggles the popover's visibility on tap.
-  tap,
-
-  /// The popover is controlled exclusively via a [PopoverController].
-  manual
-}
-
-/// Provides the [PopoverController] to the popover's overlay child.
-///
-/// Widgets within the `overlayChildBuilder` can access the controller via
-/// `PopoverData.of(context)`.
-class PopoverData extends InheritedWidget {
-  /// The controller for the popover.
-  final PopoverController controller;
-
-  /// Creates a [PopoverData] widget.
-  const PopoverData({
-    super.key,
-    required this.controller,
-    required super.child,
-  });
-
-  /// Retrieves the [PopoverController] from the nearest [PopoverData] ancestor.
-  ///
-  /// This method asserts that a `PopoverData` is found in the widget tree.
-  static PopoverController of(BuildContext context) {
-    final data = context.dependOnInheritedWidgetOfExactType<PopoverData>();
-    assert(
-      data != null,
-      'PopoverData not found in context. Make sure you are calling PopoverData.of() inside a Popover overlayChildBuilder.',
-    );
-    return data!.controller;
-  }
-
-  /// Retrieves the [PopoverController] from the nearest [PopoverData] ancestor,
-  /// returning null if none is found.
-  static PopoverController? maybeOf(BuildContext context) {
-    final data = context.dependOnInheritedWidgetOfExactType<PopoverData>();
-    return data?.controller;
-  }
-
-  @override
-  bool updateShouldNotify(PopoverData oldWidget) {
-    return controller != oldWidget.controller;
-  }
-}
+const _defaultCrossAxisAlignment = PopoverCrossAxisAlignment.center;
 
 /// A widget that displays a pop-up overlay relative to its child.
-///
-/// The popover uses an [OverlayPortal] to display content, and it automatically
-/// positions itself to stay within the screen boundaries.
 class Popover extends StatefulWidget {
   /// Creates a popover widget.
   const Popover({
     super.key,
     required this.child,
-    required this.overlayChildBuilder,
+    required this.contentBuilder,
     this.controller,
-    this.showDelay,
-    this.debounceDuration,
     this.offset,
-    this.overlayChildHeight,
-    this.overlayChildWidth,
-    this.triggerMode,
-    this.barrierColor,
-    this.anchors,
+    this.contentHeight,
+    this.contentWidth,
+    this.triggerMode = const TapTriggerMode(),
     this.preferredDirection,
     this.constrainAxis,
     this.crossAxisAlignment,
+    this.flipMode,
+    this.scrollBehavior,
     this.transitionDuration,
     this.transitionBuilder,
-    this.consumeOutsideTap,
+    this.backdropBuilder,
+    this.onShow,
+    this.onHide,
   });
+
+  /// Creates a [Popover] configured as a tooltip with a text message.
+  ///
+  /// This is a convenience factory for creating simple text tooltips that
+  /// appear on hover. It builds on top of [Popover.arrow] with tooltip-specific
+  /// defaults.
+  static Widget tooltip({
+    Key? key,
+    required Widget child,
+    required Widget message,
+    PopoverController? controller,
+    Offset? offset,
+    PopoverTriggerMode triggerMode = const HoverTriggerMode(),
+    Color? backgroundColor,
+    EdgeInsets? padding,
+    BorderRadius? borderRadius,
+    Size? arrowSize,
+    double? arrowAlignment,
+    ArrowShape? arrowShape,
+    AxisDirection? preferredDirection,
+    Axis? constrainAxis,
+    PopoverCrossAxisAlignment? crossAxisAlignment,
+    FlipMode? flipMode,
+    PopoverScrollBehavior? scrollBehavior,
+    Duration? transitionDuration,
+    AnimatedTransitionBuilder? transitionBuilder,
+    WidgetBuilder? backdropBuilder,
+    List<BoxShadow>? boxShadow,
+    BorderSide? border,
+    Duration? showDuration,
+    VoidCallback? onShow,
+    VoidCallback? onHide,
+  }) {
+    return _PopoverConfig(
+      enableOverlayHover: false,
+      child: Popover.arrow(
+        key: key,
+        controller: controller,
+        offset: offset,
+        triggerMode:
+            showDuration != null ? const ManualTriggerMode() : triggerMode,
+        backgroundColor: backgroundColor,
+        borderRadius: borderRadius,
+        arrowSize: arrowSize,
+        arrowAlignment: arrowAlignment,
+        arrowShape: arrowShape,
+        preferredDirection: preferredDirection,
+        constrainAxis: constrainAxis,
+        crossAxisAlignment: crossAxisAlignment,
+        flipMode: flipMode,
+        scrollBehavior: scrollBehavior,
+        transitionDuration: transitionDuration,
+        transitionBuilder: transitionBuilder,
+        backdropBuilder: backdropBuilder,
+        boxShadow: boxShadow,
+        border: border,
+        onShow: onShow,
+        onHide: onHide,
+        contentBuilder: (context) {
+          final effectivePadding = padding ??
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
+
+          return Padding(
+            padding: effectivePadding,
+            child: message,
+          );
+        },
+        child: child,
+      ),
+    );
+  }
 
   /// Creates a [Popover] with a decorative arrow pointing towards the trigger.
   factory Popover.arrow({
     Key? key,
     required Widget child,
-    required WidgetBuilder overlayChildBuilder,
+    required WidgetBuilder contentBuilder,
     PopoverController? controller,
-    Duration? showDelay,
-    Duration? debounceDuration,
     Offset? offset,
-    double? overlayChildHeight,
-    double? overlayChildWidth,
-    PopoverTriggerMode? triggerMode,
-    Color? barrierColor,
-    PopoverAnchors? anchors,
+    double? contentHeight,
+    double? contentWidth,
+    PopoverTriggerMode triggerMode = const TapTriggerMode(),
     Color? backgroundColor,
     BorderRadius? borderRadius,
     ArrowShape? arrowShape,
@@ -116,30 +125,34 @@ class Popover extends StatefulWidget {
     AxisDirection? preferredDirection,
     Axis? constrainAxis,
     PopoverCrossAxisAlignment? crossAxisAlignment,
+    FlipMode? flipMode,
+    PopoverScrollBehavior? scrollBehavior,
     Duration? transitionDuration,
     AnimatedTransitionBuilder? transitionBuilder,
-    bool? consumeOutsideTap,
+    WidgetBuilder? backdropBuilder,
     List<BoxShadow>? boxShadow,
     BorderSide? border,
+    VoidCallback? onShow,
+    VoidCallback? onHide,
   }) {
     return Popover(
       key: key,
       controller: controller,
-      showDelay: showDelay,
-      debounceDuration: debounceDuration,
       offset: offset,
-      overlayChildHeight: overlayChildHeight,
-      overlayChildWidth: overlayChildWidth,
+      contentHeight: contentHeight,
+      contentWidth: contentWidth,
       triggerMode: triggerMode,
-      barrierColor: barrierColor,
-      anchors: anchors,
       preferredDirection: preferredDirection,
       constrainAxis: constrainAxis,
       crossAxisAlignment: crossAxisAlignment,
+      flipMode: flipMode,
+      scrollBehavior: scrollBehavior,
       transitionDuration: transitionDuration ?? _defaultTransitionDuration,
       transitionBuilder: transitionBuilder,
-      consumeOutsideTap: consumeOutsideTap,
-      overlayChildBuilder: (context) {
+      backdropBuilder: backdropBuilder,
+      onShow: onShow,
+      onHide: onHide,
+      contentBuilder: (context) {
         return Builder(
           builder: (context) {
             return PopoverWithArrow(
@@ -150,7 +163,7 @@ class Popover extends StatefulWidget {
               arrowAlignment: arrowAlignment,
               boxShadow: boxShadow,
               border: border,
-              child: overlayChildBuilder(context),
+              child: contentBuilder(context),
             );
           },
         );
@@ -163,35 +176,22 @@ class Popover extends StatefulWidget {
   final Widget child;
 
   /// A builder for the content of the popover.
-  final WidgetBuilder overlayChildBuilder;
+  final WidgetBuilder contentBuilder;
 
   /// An optional controller to manage the popover's state programmatically.
   final PopoverController? controller;
-
-  /// The delay before the popover is shown, typically for hover mode.
-  final Duration? showDelay;
-
-  /// The delay before hiding the popover, used in hover mode to prevent
-  /// accidental dismissal when moving the cursor between the child and popover.
-  final Duration? debounceDuration;
 
   /// The offset between the child and the popover.
   final Offset? offset;
 
   /// The height of the popover content. Providing this helps with positioning.
-  final double? overlayChildHeight;
+  final double? contentHeight;
 
   /// The width of the popover content. Providing this helps with positioning.
-  final double? overlayChildWidth;
+  final double? contentWidth;
 
-  /// How the popover is triggered.
-  final PopoverTriggerMode? triggerMode;
-
-  /// The color of the barrier behind the
-  final Color? barrierColor;
-
-  /// A fixed anchor configuration. If provided, automatic calculation is skipped.
-  final PopoverAnchors? anchors;
+  /// How the popover is triggered and its mode-specific configuration.
+  final PopoverTriggerMode triggerMode;
 
   /// The preferred direction to show the popover if space allows.
   final AxisDirection? preferredDirection;
@@ -202,15 +202,40 @@ class Popover extends StatefulWidget {
   /// How to align the popover on the cross-axis.
   final PopoverCrossAxisAlignment? crossAxisAlignment;
 
+  /// Controls how the popover flips to fit on screen.
+  ///
+  /// - [FlipMode.both] (default): The popover will flip both its direction
+  ///   (up/down, left/right) and alignment to fit within screen bounds.
+  /// - [FlipMode.mainAxis]: Only flips the direction, keeping alignment fixed.
+  /// - [FlipMode.crossAxis]: Only flips the alignment, keeping direction fixed.
+  /// - [FlipMode.none]: No flipping; the popover may overflow the screen.
+  final FlipMode? flipMode;
+
+  /// Defines how the popover responds to scrolling of ancestor scrollable widgets.
+  ///
+  /// - [PopoverScrollBehavior.dismiss] (default): Immediately hides when scrolling
+  ///   begins, preventing awkward positioning issues.
+  /// - [PopoverScrollBehavior.reposition]: Recalculates positioning during scroll
+  ///   to handle screen bounds, flipping, and alignment. Hides when trigger scrolls
+  ///   completely offscreen.
+  /// - [PopoverScrollBehavior.none]: No special handling; popover may appear
+  ///   misaligned or detached during scroll.
+  final PopoverScrollBehavior? scrollBehavior;
+
   /// The duration for the entry and exit animations.
   final Duration? transitionDuration;
 
   /// A custom builder for the popover's animation.
   final AnimatedTransitionBuilder? transitionBuilder;
 
-  /// Whether a tap outside the popover is consumed, preventing it from reaching
-  /// widgets below.
-  final bool? consumeOutsideTap;
+  /// A builder for the backdrop widget displayed behind the popover.
+  final WidgetBuilder? backdropBuilder;
+
+  /// Called when the popover is shown.
+  final VoidCallback? onShow;
+
+  /// Called when the popover begins hiding.
+  final VoidCallback? onHide;
 
   @override
   State<Popover> createState() => _PopoverState();
@@ -228,7 +253,10 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
   Timer? _hideTimer;
 
   PopoverController? _internalController;
+  Size? _lastScreenSize;
   late final AnimationController _animationController;
+
+  ScrollPosition? _scrollPosition;
 
   PopoverController get _controller =>
       widget.controller ?? (_internalController ??= PopoverController());
@@ -260,6 +288,32 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final currentSize = MediaQuery.sizeOf(context);
+
+    if (_lastScreenSize != currentSize && _overlayController.isShowing) {
+      _lastScreenSize = currentSize;
+      _calculateAnchors();
+    } else {
+      _lastScreenSize = currentSize;
+    }
+
+    if (widget.scrollBehavior != PopoverScrollBehavior.none) {
+      final newScrollPosition = Scrollable.maybeOf(context)?.position;
+      if (_scrollPosition != newScrollPosition) {
+        _scrollPosition?.removeListener(_handleScroll);
+        _scrollPosition = newScrollPosition;
+        _scrollPosition?.addListener(_handleScroll);
+      }
+    } else {
+      _scrollPosition?.removeListener(_handleScroll);
+      _scrollPosition = null;
+    }
+  }
+
+  @override
   void dispose() {
     _animationController.removeStatusListener(_handleAnimationStatusChanged);
     _animationController.dispose();
@@ -267,6 +321,7 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
     _isChildHovered.removeListener(_handleHoverChange);
     _isOverlayHovered.removeListener(_handleHoverChange);
     _controller.removeListener(_handleControllerChange);
+    _scrollPosition?.removeListener(_handleScroll);
     _isChildHovered.dispose();
     _isOverlayHovered.dispose();
     _internalController?.dispose();
@@ -298,6 +353,10 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
     if (sync && !_controller.isShowing) {
       _controller.show();
     }
+
+    if (sync) {
+      widget.onShow?.call();
+    }
   }
 
   void _hidePopover({bool sync = true}) {
@@ -306,21 +365,22 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
     if (sync && _controller.isShowing) {
       _controller.hide();
     }
+
+    if (sync) {
+      widget.onHide?.call();
+    }
   }
 
   void _tryShow() {
     if (_overlayController.isShowing || (_showTimer?.isActive ?? false)) return;
-    final showDelay = widget.showDelay ?? _defaultShowDelay;
+    final showDelay = switch (widget.triggerMode) {
+      HoverTriggerMode(:final showDelay) => showDelay,
+      _ => Duration.zero,
+    };
     _showTimer = Timer(showDelay, _showPopover);
   }
 
   void _calculateAnchors() {
-    // If user provided fixed anchors, use them directly
-    if (widget.anchors != null) {
-      _controller.setAnchors(widget.anchors!);
-      return;
-    }
-
     final leaderSize = _layerLink.leaderSize;
     if (leaderSize == null) return;
 
@@ -334,22 +394,37 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
       leaderPosition: leaderGlobalPosition,
       leaderSize: leaderSize,
       screenSize: screenSize,
-      overlayChildHeight: widget.overlayChildHeight,
-      overlayChildWidth: widget.overlayChildWidth,
+      contentHeight: widget.contentHeight,
+      contentWidth: widget.contentWidth,
       preferredDirection: widget.preferredDirection,
       constrainAxis: widget.constrainAxis,
       crossAxisAlignment:
           widget.crossAxisAlignment ?? _defaultCrossAxisAlignment,
+      flipMode: widget.flipMode,
+    );
+
+    final offset = widget.offset ?? newAnchors.calculateOffset();
+
+    final geometry = PopoverGeometry.calculate(
+      anchors: newAnchors,
+      offset: offset,
+      leaderGlobalPosition: leaderGlobalPosition,
+      leaderSize: leaderSize,
+      contentWidth: widget.contentWidth,
+      contentHeight: widget.contentHeight,
     );
 
     _controller.setAnchors(newAnchors);
+    _controller.setGeometry(geometry);
   }
 
   void _handleHoverChange() {
     _hideTimer?.cancel();
     if (!_isChildHovered.value && !_isOverlayHovered.value) {
-      final debounceDuration =
-          widget.debounceDuration ?? _defaultDebounceDuration;
+      final debounceDuration = switch (widget.triggerMode) {
+        HoverTriggerMode(:final debounceDuration) => debounceDuration,
+        _ => const Duration(milliseconds: 50),
+      };
       _hideTimer = Timer(debounceDuration, _hidePopover);
     }
   }
@@ -383,13 +458,60 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
     );
   }
 
+  void _handleScroll() {
+    if (!_overlayController.isShowing) return;
+    if (_animationController.isAnimating) return;
+
+    switch (widget.scrollBehavior ?? PopoverScrollBehavior.dismiss) {
+      case PopoverScrollBehavior.dismiss:
+        _showTimer?.cancel();
+        _hideTimer?.cancel();
+        _hidePopover();
+        break;
+
+      case PopoverScrollBehavior.reposition:
+        if (_isTriggerInViewport()) {
+          _calculateAnchors();
+        } else {
+          _showTimer?.cancel();
+          _hideTimer?.cancel();
+          _hidePopover();
+        }
+        break;
+
+      case PopoverScrollBehavior.none:
+        // Should never be called since we don't attach listener for 'none'
+        break;
+    }
+  }
+
+  bool _isTriggerInViewport() {
+    final renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox == null || !renderBox.hasSize) return false;
+
+    final triggerGlobalPosition = renderBox.localToGlobal(Offset.zero);
+    final triggerSize = renderBox.size;
+    final screenSize = MediaQuery.sizeOf(context);
+
+    // Check if trigger is completely outside the viewport
+    final triggerRect = triggerGlobalPosition & triggerSize;
+    final screenRect = Offset.zero & screenSize;
+
+    return screenRect.overlaps(triggerRect);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final triggerMode = widget.triggerMode ?? _defaultTriggerMode;
-    final isManualMode = triggerMode == PopoverTriggerMode.manual;
-    final enableHover =
-        !isManualMode && triggerMode == PopoverTriggerMode.hover;
-    final enableTap = !isManualMode && triggerMode == PopoverTriggerMode.tap;
+    final triggerMode = widget.triggerMode;
+    final enableHover = triggerMode is HoverTriggerMode;
+    final enableTap = triggerMode is TapTriggerMode;
+    final enableOverlayHover =
+        _PopoverConfig.maybeOf(context)?.enableOverlayHover ?? true;
+
+    final consumeOutsideTap = switch (triggerMode) {
+      TapTriggerMode(:final consumeOutsideTap) => consumeOutsideTap,
+      _ => false,
+    };
 
     return OverlayPortal(
       controller: _overlayController,
@@ -397,57 +519,54 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
         return TapRegion(
           groupId: _tapRegionGroupId,
           onTapOutside: enableTap ? _handleTapOutside : null,
-          consumeOutsideTaps:
-              widget.consumeOutsideTap ?? _defaultConsumeOutsideTap,
-          child: Stack(
-            children: [
-              if (enableTap &&
-                  (widget.barrierColor ?? _defaultBarrierColor) !=
-                      Colors.transparent)
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: Container(
-                      color: widget.barrierColor ?? _defaultBarrierColor,
-                    ),
-                  ),
-                ),
-              ListenableBuilder(
-                listenable: _controller,
-                builder: (context, _) {
-                  final anchors = _controller.anchors;
-                  final offset = widget.offset ?? _defaultOffset;
+          consumeOutsideTaps: consumeOutsideTap,
+          child: ListenableBuilder(
+            listenable: _controller,
+            builder: (context, _) {
+              final anchors = _controller.anchors;
+              final geometry = _controller.geometry;
+              final offset = geometry.offset;
 
-                  final popoverContent = PopoverData(
-                    controller: _controller,
-                    child: MouseRegion(
-                      onEnter: enableHover
-                          ? (_) => _isOverlayHovered.value = true
-                          : null,
-                      onExit: enableHover
-                          ? (_) => _isOverlayHovered.value = false
-                          : null,
-                      child: widget.overlayChildBuilder(context),
-                    ),
-                  );
-
-                  return CompositedTransformFollower(
-                    link: _layerLink,
-                    targetAnchor: anchors.targetAnchor,
-                    followerAnchor: anchors.followerAnchor,
-                    offset: offset,
-                    child: Align(
-                      alignment: anchors.overlayAlignment,
-                      child: (widget.transitionBuilder ??
-                          _defaultTransitionBuilder)(
-                        context,
-                        _animationController,
-                        popoverContent,
+              return PopoverData(
+                controller: _controller,
+                geometry: geometry,
+                child: Stack(
+                  children: [
+                    if (widget.backdropBuilder case final builder?)
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: Builder(
+                            builder: (context) => builder(context),
+                          ),
+                        ),
+                      ),
+                    CompositedTransformFollower(
+                      link: _layerLink,
+                      targetAnchor: anchors.targetAnchor,
+                      followerAnchor: anchors.followerAnchor,
+                      offset: offset,
+                      child: Align(
+                        alignment: anchors.overlayAlignment,
+                        child: (widget.transitionBuilder ??
+                            _defaultTransitionBuilder)(
+                          context,
+                          _animationController,
+                          MouseRegion(
+                            onEnter: enableHover && enableOverlayHover
+                                ? (_) => _isOverlayHovered.value = true
+                                : null,
+                            onExit: enableHover && enableOverlayHover
+                                ? (_) => _isOverlayHovered.value = false
+                                : null,
+                            child: widget.contentBuilder(context),
+                          ),
+                        ),
                       ),
                     ),
-                  );
-                },
-              ),
-            ],
+                  ],
+                ),
+              );
+            },
           ),
         );
       },
@@ -477,5 +596,24 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
         ),
       ),
     );
+  }
+}
+
+/// Internal configuration for popover behavior.
+class _PopoverConfig extends InheritedWidget {
+  final bool enableOverlayHover;
+
+  const _PopoverConfig({
+    required this.enableOverlayHover,
+    required super.child,
+  });
+
+  static _PopoverConfig? maybeOf(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<_PopoverConfig>();
+  }
+
+  @override
+  bool updateShouldNotify(_PopoverConfig oldWidget) {
+    return enableOverlayHover != oldWidget.enableOverlayHover;
   }
 }
