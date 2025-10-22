@@ -115,7 +115,7 @@ class PopoverAnchors {
   /// Whether the popover is positioned to the right of the target.
   bool get isRight => followerAnchor.x < targetAnchor.x;
 
-  /// Returns the offset based on the popover's position direction.
+  /// Calculates direction-aware spacing offset from trigger to popover.
   Offset calculateOffset({double spacing = 8.0}) {
     if (isAbove) {
       return Offset(0, -spacing);

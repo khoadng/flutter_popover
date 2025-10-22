@@ -20,6 +20,7 @@ class Popover extends StatefulWidget {
     required this.child,
     required this.contentBuilder,
     this.controller,
+    this.spacing,
     this.offset,
     this.contentHeight,
     this.contentWidth,
@@ -46,6 +47,7 @@ class Popover extends StatefulWidget {
     required Widget child,
     required Widget message,
     PopoverController? controller,
+    double? spacing,
     Offset? offset,
     PopoverTriggerMode triggerMode = const HoverTriggerMode(),
     Color? backgroundColor,
@@ -73,6 +75,7 @@ class Popover extends StatefulWidget {
       child: Popover.arrow(
         key: key,
         controller: controller,
+        spacing: spacing,
         offset: offset,
         triggerMode:
             showDuration != null ? const ManualTriggerMode() : triggerMode,
@@ -113,6 +116,7 @@ class Popover extends StatefulWidget {
     required Widget child,
     required WidgetBuilder contentBuilder,
     PopoverController? controller,
+    double? spacing,
     Offset? offset,
     double? contentHeight,
     double? contentWidth,
@@ -138,6 +142,7 @@ class Popover extends StatefulWidget {
     return Popover(
       key: key,
       controller: controller,
+      spacing: spacing,
       offset: offset,
       contentHeight: contentHeight,
       contentWidth: contentWidth,
@@ -181,7 +186,12 @@ class Popover extends StatefulWidget {
   /// An optional controller to manage the popover's state programmatically.
   final PopoverController? controller;
 
-  /// The offset between the child and the popover.
+  /// Distance from the trigger to the popover content. Automatically adjusts
+  /// based on direction when the popover flips.
+  final double? spacing;
+
+  /// Absolute position adjustment applied after spacing. Use this for fine-tuning
+  /// when automatic positioning needs adjustment.
   final Offset? offset;
 
   /// The height of the popover content. Providing this helps with positioning.
@@ -403,7 +413,12 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
       flipMode: widget.flipMode,
     );
 
-    final offset = widget.offset ?? newAnchors.calculateOffset();
+    final spacingOffset = switch (widget.spacing) {
+      final spacing? => newAnchors.calculateOffset(spacing: spacing),
+      null => newAnchors.calculateOffset(),
+    };
+
+    final offset = spacingOffset + (widget.offset ?? Offset.zero);
 
     final geometry = PopoverGeometry.calculate(
       anchors: newAnchors,

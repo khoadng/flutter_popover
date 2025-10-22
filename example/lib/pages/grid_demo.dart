@@ -5,15 +5,20 @@ const kTooltipWidth = 200.0;
 
 class _BackdropClipper extends CustomClipper<Path> {
   final Rect? exclude;
+  final BorderRadius? excludeRadius;
 
-  const _BackdropClipper({this.exclude});
+  const _BackdropClipper({this.exclude, this.excludeRadius});
 
   @override
   Path getClip(Size size) {
     final path = Path()..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
 
     if (exclude != null) {
-      path.addRect(exclude!);
+      if (excludeRadius != null) {
+        path.addRRect(excludeRadius!.toRRect(exclude!));
+      } else {
+        path.addRect(exclude!);
+      }
       path.fillType = PathFillType.evenOdd;
     }
 
@@ -22,7 +27,8 @@ class _BackdropClipper extends CustomClipper<Path> {
 
   @override
   bool shouldReclip(covariant _BackdropClipper oldClipper) {
-    return exclude != oldClipper.exclude;
+    return exclude != oldClipper.exclude ||
+        excludeRadius != oldClipper.excludeRadius;
   }
 }
 
@@ -60,6 +66,7 @@ class GridDemo extends StatelessWidget {
             backdropBuilder: (context) => ClipPath(
               clipper: _BackdropClipper(
                 exclude: PopoverData.of(context).geometry.triggerBounds,
+                excludeRadius: BorderRadius.circular(8),
               ),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
