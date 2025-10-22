@@ -11,18 +11,22 @@ sealed class PopoverTriggerMode {
 /// when hovering over an element.
 class HoverTriggerMode extends PopoverTriggerMode {
   /// The delay before the popover is shown after the mouse enters.
-  final Duration waitDuration;
+  ///
+  /// Defaults to `Duration.zero`, the popover shows immediately.
+  final Duration? waitDuration;
 
   /// The delay before hiding the popover after the mouse exits.
   ///
   /// This debounce duration prevents accidental dismissal when moving the
   /// cursor between the trigger and the popover content.
-  final Duration debounceDuration;
+  ///
+  /// Defaults to 50 milliseconds.
+  final Duration? debounceDuration;
 
   /// Creates a hover trigger mode.
   const HoverTriggerMode({
-    this.waitDuration = Duration.zero,
-    this.debounceDuration = const Duration(milliseconds: 50),
+    this.waitDuration,
+    this.debounceDuration,
   });
 }
 
@@ -33,11 +37,13 @@ class HoverTriggerMode extends PopoverTriggerMode {
 class TapTriggerMode extends PopoverTriggerMode {
   /// Whether a tap outside the popover is consumed, preventing it from
   /// reaching widgets below.
-  final bool consumeOutsideTap;
+  ///
+  /// Defaults to `false`, allowing taps to propagate to underlying widgets.
+  final bool? consumeOutsideTap;
 
   /// Creates a tap trigger mode.
   const TapTriggerMode({
-    this.consumeOutsideTap = false,
+    this.consumeOutsideTap,
   });
 }
 

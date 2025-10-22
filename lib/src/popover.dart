@@ -11,9 +11,11 @@ import 'trigger.dart';
 
 const _defaultTransitionDuration = Duration(milliseconds: 100);
 const _defaultCrossAxisAlignment = PopoverCrossAxisAlignment.center;
-const _defaultHoverDebounceDuration = Duration(milliseconds: 50);
+const _defaultDebounceDuration = Duration(milliseconds: 50);
 const _defaultScrollBehavior = PopoverScrollBehavior.dismiss;
 const _defaultTriggerMode = TapTriggerMode();
+const _defaultWaitDuration = Duration.zero;
+const _defaultConsumeOutsideTap = false;
 
 /// A widget that displays a pop-up overlay relative to its child.
 class Popover extends StatefulWidget {
@@ -287,6 +289,21 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
   PopoverTriggerMode get _effectiveTriggerMode =>
       widget.triggerMode ?? _defaultTriggerMode;
 
+  Duration get _effectiveWaitDuration => switch (_effectiveTriggerMode) {
+        HoverTriggerMode(:final waitDuration?) => waitDuration,
+        _ => _defaultWaitDuration,
+      };
+
+  Duration get _effectiveDebounceDuration => switch (_effectiveTriggerMode) {
+        HoverTriggerMode(:final debounceDuration?) => debounceDuration,
+        _ => _defaultDebounceDuration,
+      };
+
+  bool get _effectiveConsumeOutsideTap => switch (_effectiveTriggerMode) {
+        TapTriggerMode(:final consumeOutsideTap?) => consumeOutsideTap,
+        _ => _defaultConsumeOutsideTap,
+      };
+
   @override
   void initState() {
     super.initState();
@@ -399,11 +416,8 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
 
   void _tryShow() {
     if (_overlayController.isShowing || (_showTimer?.isActive ?? false)) return;
-    final waitDuration = switch (_effectiveTriggerMode) {
-      HoverTriggerMode(:final waitDuration) => waitDuration,
-      _ => Duration.zero,
-    };
-    _showTimer = Timer(waitDuration, _showPopover);
+
+    _showTimer = Timer(_effectiveWaitDuration, _showPopover);
   }
 
   void _calculateAnchors() {
@@ -451,11 +465,7 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
   void _handleHoverChange() {
     _hideTimer?.cancel();
     if (!_isChildHovered.value && !_isOverlayHovered.value) {
-      final debounceDuration = switch (_effectiveTriggerMode) {
-        HoverTriggerMode(:final debounceDuration) => debounceDuration,
-        _ => _defaultHoverDebounceDuration,
-      };
-      _hideTimer = Timer(debounceDuration, _hidePopover);
+      _hideTimer = Timer(_effectiveDebounceDuration, _hidePopover);
     }
   }
 
@@ -538,18 +548,13 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
     final enableOverlayHover =
         _PopoverConfig.maybeOf(context)?.enableOverlayHover ?? true;
 
-    final consumeOutsideTap = switch (triggerMode) {
-      TapTriggerMode(:final consumeOutsideTap) => consumeOutsideTap,
-      _ => false,
-    };
-
     return OverlayPortal(
       controller: _overlayController,
       overlayChildBuilder: (context) {
         return TapRegion(
           groupId: _tapRegionGroupId,
           onTapOutside: enableTap ? _handleTapOutside : null,
-          consumeOutsideTaps: consumeOutsideTap,
+          consumeOutsideTaps: _effectiveConsumeOutsideTap,
           child: ListenableBuilder(
             listenable: _controller,
             builder: (context, _) {
