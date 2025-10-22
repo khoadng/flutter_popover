@@ -271,12 +271,15 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
   PopoverController get _controller =>
       widget.controller ?? (_internalController ??= PopoverController());
 
+  Duration get _effectiveTransitionDuration =>
+      widget.transitionDuration ?? _defaultTransitionDuration;
+
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: widget.transitionDuration ?? _defaultTransitionDuration,
+      duration: _effectiveTransitionDuration,
     );
     _animationController.addStatusListener(_handleAnimationStatusChanged);
 
@@ -293,7 +296,7 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
       _controller.addListener(_handleControllerChange);
     }
     if (oldWidget.transitionDuration != widget.transitionDuration) {
-      _animationController.duration = widget.transitionDuration;
+      _animationController.duration = _effectiveTransitionDuration;
     }
   }
 
