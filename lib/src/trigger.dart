@@ -1,25 +1,32 @@
+/// {@template popover_trigger_mode}
 /// Defines what user action triggers the popover to show and hide.
 ///
 /// Each trigger mode can have its own specific configuration.
+/// {@endtemplate}
 sealed class PopoverTriggerMode {
   const PopoverTriggerMode();
 
+  /// {@macro hover_trigger_mode}
   const factory PopoverTriggerMode.hover({
     Duration? waitDuration,
     Duration? debounceDuration,
   }) = HoverTriggerMode;
 
+  /// {@macro tap_trigger_mode}
   const factory PopoverTriggerMode.tap({
     bool? consumeOutsideTap,
   }) = TapTriggerMode;
 
+  /// {@macro manual_trigger_mode}
   const factory PopoverTriggerMode.manual() = ManualTriggerMode;
 }
 
+/// {@macro popover_trigger_mode}
+/// {@template hover_trigger_mode}
+///
 /// Shows the popover on mouse enter and hides on mouse exit.
 ///
-/// This mode is ideal for tooltips and preview popovers that should appear
-/// when hovering over an element.
+/// {@endtemplate}
 class HoverTriggerMode extends PopoverTriggerMode {
   /// The delay before the popover is shown after the mouse enters.
   ///
@@ -41,10 +48,12 @@ class HoverTriggerMode extends PopoverTriggerMode {
   });
 }
 
+/// {@macro popover_trigger_mode}
+/// {@template tap_trigger_mode}
+///
 /// Toggles the popover's visibility on tap.
 ///
-/// This mode is ideal for interactive popovers like menus, dropdowns, and
-/// modal content that requires user interaction.
+/// {@endtemplate}
 class TapTriggerMode extends PopoverTriggerMode {
   /// Whether a tap outside the popover is consumed, preventing it from
   /// reaching widgets below.
@@ -58,11 +67,15 @@ class TapTriggerMode extends PopoverTriggerMode {
   });
 }
 
+/// {@macro popover_trigger_mode}
+/// {@template manual_trigger_mode}
+///
 /// The popover is controlled exclusively via a [PopoverController].
 ///
 /// In this mode, the popover will not respond to any user interaction.
 /// Show and hide operations must be performed programmatically using the
 /// controller.
+/// {@endtemplate}
 class ManualTriggerMode extends PopoverTriggerMode {
   /// Creates a manual trigger mode.
   const ManualTriggerMode();
