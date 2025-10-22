@@ -3,6 +3,17 @@
 /// Each trigger mode can have its own specific configuration.
 sealed class PopoverTriggerMode {
   const PopoverTriggerMode();
+
+  const factory PopoverTriggerMode.hover({
+    Duration? waitDuration,
+    Duration? debounceDuration,
+  }) = HoverTriggerMode;
+
+  const factory PopoverTriggerMode.tap({
+    bool? consumeOutsideTap,
+  }) = TapTriggerMode;
+
+  const factory PopoverTriggerMode.manual() = ManualTriggerMode;
 }
 
 /// Shows the popover on mouse enter and hides on mouse exit.

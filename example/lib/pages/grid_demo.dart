@@ -62,7 +62,7 @@ class GridDemo extends StatelessWidget {
             backgroundColor: Colors.grey[900],
             contentHeight: kTooltipHeight,
             contentWidth: kTooltipWidth,
-            triggerMode: const TapTriggerMode(consumeOutsideTap: true),
+            triggerMode: const PopoverTriggerMode.tap(consumeOutsideTap: true),
             backdropBuilder: (context) => ClipPath(
               clipper: _BackdropClipper(
                 exclude: PopoverData.of(context).geometry.triggerBounds,

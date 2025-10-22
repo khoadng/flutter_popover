@@ -49,7 +49,7 @@ class _MacosDesktopDemoState extends State<MacosDesktopDemo> {
     return Popover(
       crossAxisAlignment: PopoverCrossAxisAlignment.start,
       controller: _popoverControllers[key],
-      triggerMode: const ManualTriggerMode(),
+      triggerMode: const PopoverTriggerMode.manual(),
       preferredDirection: AxisDirection.down,
       constrainAxis: Axis.vertical,
       offset: const Offset(0, 10),

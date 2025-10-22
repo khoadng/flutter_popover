@@ -68,14 +68,14 @@ Popover.tooltip(
 
 Control how the popover is shown with `triggerMode`:
 
-  * `TapTriggerMode()` (Default): Shows and hides on tap.
-  * `HoverTriggerMode()`: Shows on hover, ideal for desktop and web.
-  * `ManualTriggerMode()`: Control visibility with a `PopoverController`.
+  * `PopoverTriggerMode.tap()`: Shows and hides on tap.
+  * `PopoverTriggerMode.hover()`: Shows on hover, ideal for desktop and web.
+  * `PopoverTriggerMode.manual()`: Control visibility with a `PopoverController`.
 
 ```dart
 // Hover Trigger
 Popover(
-  triggerMode: const HoverTriggerMode(),
+  triggerMode: const PopoverTriggerMode.hover(),
   child: const Text('Hover over me'),
   contentBuilder: (context) => const Text('Hello!'),
 );
@@ -85,7 +85,7 @@ final controller = PopoverController();
 
 Popover(
   controller: controller,
-  triggerMode: const ManualTriggerMode(),
+  triggerMode: const PopoverTriggerMode.manual(),
   child: const Text('A widget'),
   contentBuilder: (context) => const Text('Content'),
 );

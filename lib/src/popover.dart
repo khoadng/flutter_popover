@@ -83,8 +83,8 @@ class Popover extends StatefulWidget {
         spacing: spacing,
         offset: offset,
         triggerMode: showDuration != null
-            ? const ManualTriggerMode()
-            : (triggerMode ?? const HoverTriggerMode()),
+            ? const PopoverTriggerMode.manual()
+            : (triggerMode ?? const PopoverTriggerMode.hover()),
         backgroundColor: backgroundColor,
         borderRadius: borderRadius,
         arrowSize: arrowSize,
