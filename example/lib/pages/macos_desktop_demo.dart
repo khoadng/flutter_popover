@@ -139,9 +139,13 @@ class _MacosDesktopDemoState extends State<MacosDesktopDemo> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
-                          'Click an icon in the top-right bar or hover over dock icons. 👆',
-                          style: TextStyle(color: Colors.grey),
+                        Tooltip(
+                          message: 'Try me!',
+                          showDuration: const Duration(seconds: 3),
+                          child: const Text(
+                            'Click an icon in the top-right bar or hover over dock icons. 👆',
+                            style: TextStyle(color: Colors.grey),
+                          ),
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton.icon(
@@ -537,6 +541,7 @@ class _DockIcon extends StatelessWidget {
         app.name,
         style: const TextStyle(color: Colors.white, fontSize: 12),
       ),
+      triggerMode: const PopoverTriggerMode.hover(),
       preferredDirection: isVertical ? AxisDirection.right : AxisDirection.up,
       constrainAxis: isVertical ? Axis.horizontal : Axis.vertical,
       backgroundColor: Colors.grey[800],

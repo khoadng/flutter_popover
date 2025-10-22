@@ -82,9 +82,7 @@ class Popover extends StatefulWidget {
         controller: controller,
         spacing: spacing,
         offset: offset,
-        triggerMode: showDuration != null
-            ? const PopoverTriggerMode.manual()
-            : (triggerMode ?? const PopoverTriggerMode.hover()),
+        triggerMode: (triggerMode ?? const PopoverTriggerMode.hover()),
         backgroundColor: backgroundColor,
         borderRadius: borderRadius,
         arrowSize: arrowSize,
@@ -106,9 +104,12 @@ class Popover extends StatefulWidget {
           final effectivePadding = padding ??
               const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
 
-          return Padding(
-            padding: effectivePadding,
-            child: message,
+          return _TooltipAutoDismiss(
+            showDuration: showDuration,
+            child: Padding(
+              padding: effectivePadding,
+              child: message,
+            ),
           );
         },
         child: child,
@@ -650,5 +651,85 @@ class _PopoverConfig extends InheritedWidget {
   @override
   bool updateShouldNotify(_PopoverConfig oldWidget) {
     return enableOverlayHover != oldWidget.enableOverlayHover;
+  }
+}
+
+class _TooltipAutoDismiss extends StatefulWidget {
+  const _TooltipAutoDismiss({
+    required this.child,
+    required this.showDuration,
+  });
+
+  final Widget child;
+  final Duration? showDuration;
+
+  @override
+  State<_TooltipAutoDismiss> createState() => __TooltipAutoDismissState();
+}
+
+class __TooltipAutoDismissState extends State<_TooltipAutoDismiss> {
+  PopoverController? _controller;
+  Timer? _dismissTimer;
+
+  get _isShowing => _controller?.isShowing ?? false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final controller = PopoverData.maybeOf(context)?.controller;
+    if (_controller == controller) return;
+
+    _controller?.removeListener(_handleControllerChanged);
+    _controller = controller;
+    _controller?.addListener(_handleControllerChanged);
+
+    if (_controller?.isShowing == true) {
+      _startTimer();
+    } else {
+      _cancelTimer();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _TooltipAutoDismiss oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.showDuration != widget.showDuration && _isShowing) {
+      _startTimer();
+    }
+  }
+
+  void _handleControllerChanged() {
+    if (!mounted) return;
+    if (_isShowing) {
+      _startTimer();
+    } else {
+      _cancelTimer();
+    }
+  }
+
+  void _startTimer() {
+    _cancelTimer();
+    final showDuration = widget.showDuration;
+    if (showDuration == null || showDuration <= Duration.zero) return;
+    _dismissTimer = Timer(showDuration, () {
+      _controller?.hide();
+    });
+  }
+
+  void _cancelTimer() {
+    _dismissTimer?.cancel();
+    _dismissTimer = null;
+  }
+
+  @override
+  void dispose() {
+    _cancelTimer();
+    _controller?.removeListener(_handleControllerChanged);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
   }
 }
