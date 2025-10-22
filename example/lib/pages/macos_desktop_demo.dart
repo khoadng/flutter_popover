@@ -139,13 +139,9 @@ class _MacosDesktopDemoState extends State<MacosDesktopDemo> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Tooltip(
-                          message: 'Try me!',
-                          showDuration: const Duration(seconds: 3),
-                          child: const Text(
-                            'Click an icon in the top-right bar or hover over dock icons. 👆',
-                            style: TextStyle(color: Colors.grey),
-                          ),
+                        const Text(
+                          'Click an icon in the top-right bar or hover over dock icons. 👆',
+                          style: TextStyle(color: Colors.grey),
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton.icon(
