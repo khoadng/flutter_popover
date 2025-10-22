@@ -11,7 +11,7 @@ sealed class PopoverTriggerMode {
 /// when hovering over an element.
 class HoverTriggerMode extends PopoverTriggerMode {
   /// The delay before the popover is shown after the mouse enters.
-  final Duration showDelay;
+  final Duration waitDuration;
 
   /// The delay before hiding the popover after the mouse exits.
   ///
@@ -21,7 +21,7 @@ class HoverTriggerMode extends PopoverTriggerMode {
 
   /// Creates a hover trigger mode.
   const HoverTriggerMode({
-    this.showDelay = Duration.zero,
+    this.waitDuration = Duration.zero,
     this.debounceDuration = const Duration(milliseconds: 50),
   });
 }

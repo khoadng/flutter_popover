@@ -212,7 +212,7 @@ class _WikiLinkState extends State<_WikiLink> {
       contentHeight: 180,
       contentWidth: 320,
       triggerMode: const HoverTriggerMode(
-        showDelay: Duration(milliseconds: 400),
+        waitDuration: Duration(milliseconds: 400),
       ),
       preferredDirection: AxisDirection.up,
       constrainAxis: Axis.vertical,

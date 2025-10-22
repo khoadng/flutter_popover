@@ -399,11 +399,11 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
 
   void _tryShow() {
     if (_overlayController.isShowing || (_showTimer?.isActive ?? false)) return;
-    final showDelay = switch (_effectiveTriggerMode) {
-      HoverTriggerMode(:final showDelay) => showDelay,
+    final waitDuration = switch (_effectiveTriggerMode) {
+      HoverTriggerMode(:final waitDuration) => waitDuration,
       _ => Duration.zero,
     };
-    _showTimer = Timer(showDelay, _showPopover);
+    _showTimer = Timer(waitDuration, _showPopover);
   }
 
   void _calculateAnchors() {

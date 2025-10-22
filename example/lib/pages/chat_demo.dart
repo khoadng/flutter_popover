@@ -97,7 +97,7 @@ class _ChatMessageState extends State<_ChatMessage> {
               contentHeight: 80,
               contentWidth: 420,
               triggerMode: const HoverTriggerMode(
-                showDelay: Duration(milliseconds: 200),
+                waitDuration: Duration(milliseconds: 200),
               ),
               offset: Offset.zero,
               preferredDirection: AxisDirection.up,
@@ -267,7 +267,7 @@ class _EmojiButtonState extends State<_EmojiButton> {
   Widget build(BuildContext context) {
     return Popover(
       triggerMode: const HoverTriggerMode(
-        showDelay: Duration(milliseconds: 400),
+        waitDuration: Duration(milliseconds: 400),
       ),
       preferredDirection: AxisDirection.up,
       crossAxisAlignment: PopoverCrossAxisAlignment.center,

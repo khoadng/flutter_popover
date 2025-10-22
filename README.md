@@ -169,8 +169,7 @@ Configure trigger modes for advanced interactions:
 // Hover trigger with delays
 Popover(
   triggerMode: const HoverTriggerMode(
-    showDelay: Duration(milliseconds: 300),
-    debounceDuration: Duration(milliseconds: 100),
+    waitDuration: Duration(milliseconds: 300),
   ),
   child: const Text('Hover over me'),
   contentBuilder: (context) => const Text('Delayed tooltip'),
