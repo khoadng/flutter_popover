@@ -11,6 +11,9 @@ import 'trigger.dart';
 
 const _defaultTransitionDuration = Duration(milliseconds: 100);
 const _defaultCrossAxisAlignment = PopoverCrossAxisAlignment.center;
+const _defaultHoverDebounceDuration = Duration(milliseconds: 50);
+const _defaultScrollBehavior = PopoverScrollBehavior.dismiss;
+const _defaultTriggerMode = TapTriggerMode();
 
 /// A widget that displays a pop-up overlay relative to its child.
 class Popover extends StatefulWidget {
@@ -24,7 +27,7 @@ class Popover extends StatefulWidget {
     this.offset,
     this.contentHeight,
     this.contentWidth,
-    this.triggerMode = const TapTriggerMode(),
+    this.triggerMode,
     this.preferredDirection,
     this.constrainAxis,
     this.crossAxisAlignment,
@@ -49,7 +52,7 @@ class Popover extends StatefulWidget {
     PopoverController? controller,
     double? spacing,
     Offset? offset,
-    PopoverTriggerMode triggerMode = const HoverTriggerMode(),
+    PopoverTriggerMode? triggerMode,
     Color? backgroundColor,
     EdgeInsets? padding,
     BorderRadius? borderRadius,
@@ -77,8 +80,9 @@ class Popover extends StatefulWidget {
         controller: controller,
         spacing: spacing,
         offset: offset,
-        triggerMode:
-            showDuration != null ? const ManualTriggerMode() : triggerMode,
+        triggerMode: showDuration != null
+            ? const ManualTriggerMode()
+            : (triggerMode ?? const HoverTriggerMode()),
         backgroundColor: backgroundColor,
         borderRadius: borderRadius,
         arrowSize: arrowSize,
@@ -120,7 +124,7 @@ class Popover extends StatefulWidget {
     Offset? offset,
     double? contentHeight,
     double? contentWidth,
-    PopoverTriggerMode triggerMode = const TapTriggerMode(),
+    PopoverTriggerMode? triggerMode,
     Color? backgroundColor,
     BorderRadius? borderRadius,
     ArrowShape? arrowShape,
@@ -201,7 +205,7 @@ class Popover extends StatefulWidget {
   final double? contentWidth;
 
   /// How the popover is triggered and its mode-specific configuration.
-  final PopoverTriggerMode triggerMode;
+  final PopoverTriggerMode? triggerMode;
 
   /// The preferred direction to show the popover if space allows.
   final AxisDirection? preferredDirection;
@@ -273,6 +277,15 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
 
   Duration get _effectiveTransitionDuration =>
       widget.transitionDuration ?? _defaultTransitionDuration;
+
+  PopoverCrossAxisAlignment get _effectiveCrossAxisAlignment =>
+      widget.crossAxisAlignment ?? _defaultCrossAxisAlignment;
+
+  PopoverScrollBehavior get _effectiveScrollBehavior =>
+      widget.scrollBehavior ?? _defaultScrollBehavior;
+
+  PopoverTriggerMode get _effectiveTriggerMode =>
+      widget.triggerMode ?? _defaultTriggerMode;
 
   @override
   void initState() {
@@ -386,7 +399,7 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
 
   void _tryShow() {
     if (_overlayController.isShowing || (_showTimer?.isActive ?? false)) return;
-    final showDelay = switch (widget.triggerMode) {
+    final showDelay = switch (_effectiveTriggerMode) {
       HoverTriggerMode(:final showDelay) => showDelay,
       _ => Duration.zero,
     };
@@ -411,8 +424,7 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
       contentWidth: widget.contentWidth,
       preferredDirection: widget.preferredDirection,
       constrainAxis: widget.constrainAxis,
-      crossAxisAlignment:
-          widget.crossAxisAlignment ?? _defaultCrossAxisAlignment,
+      crossAxisAlignment: _effectiveCrossAxisAlignment,
       flipMode: widget.flipMode,
     );
 
@@ -439,9 +451,9 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
   void _handleHoverChange() {
     _hideTimer?.cancel();
     if (!_isChildHovered.value && !_isOverlayHovered.value) {
-      final debounceDuration = switch (widget.triggerMode) {
+      final debounceDuration = switch (_effectiveTriggerMode) {
         HoverTriggerMode(:final debounceDuration) => debounceDuration,
-        _ => const Duration(milliseconds: 50),
+        _ => _defaultHoverDebounceDuration,
       };
       _hideTimer = Timer(debounceDuration, _hidePopover);
     }
@@ -467,7 +479,7 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
     Animation<double> animation,
     Widget child,
   ) {
-    if (widget.transitionDuration == Duration.zero) {
+    if (_effectiveTransitionDuration == Duration.zero) {
       return child;
     }
     return FadeTransition(
@@ -480,7 +492,7 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
     if (!_overlayController.isShowing) return;
     if (_animationController.isAnimating) return;
 
-    switch (widget.scrollBehavior ?? PopoverScrollBehavior.dismiss) {
+    switch (_effectiveScrollBehavior) {
       case PopoverScrollBehavior.dismiss:
         _showTimer?.cancel();
         _hideTimer?.cancel();
@@ -520,7 +532,7 @@ class _PopoverState extends State<Popover> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final triggerMode = widget.triggerMode;
+    final triggerMode = _effectiveTriggerMode;
     final enableHover = triggerMode is HoverTriggerMode;
     final enableTap = triggerMode is TapTriggerMode;
     final enableOverlayHover =
