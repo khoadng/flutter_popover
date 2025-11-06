@@ -1,3 +1,12 @@
+**`flutter_popover` is deprecated and no longer maintained.**
+
+It has been replaced by **[Anchor](https://github.com/khoadng/anchor)**. All future development will occur in the new repository.
+
+Please migrate to the new package for the latest features, bug fixes, and support.
+
+* **Repository:** [https://github.com/khoadng/anchor](https://github.com/khoadng/anchor)
+* **Package:** [https://pub.dev/packages/anchor_ui](https://pub.dev/packages/anchor_ui)
+
 # Flutter Popover
 
 <a href="https://pub.dev/packages/flutter_popover">
