@@ -1,3 +1,7 @@
+### 0.0.6
+
+* Deprecate flutter_popover in favor of Anchor package
+
 ### 0.0.5
 
 * Sync popover state with controller changes to avoid inconsistencies
